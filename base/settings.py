@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'base.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'CoPlat',
+        'USER': 'coplatadmin',
+        'PASSWORD': 'coplat123456',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 
@@ -115,6 +119,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Media files
+# Note that FILES will only contain data if the request method was POST and the <form> that posted to the request had enctype="multipart/form-data". Otherwise, FILES will be a blank dictionary-like object.
+
+MEDIA_ROOT = '/media/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
