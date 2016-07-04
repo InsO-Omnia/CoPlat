@@ -1,0 +1,118 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统-登录</title>
+	<script src="{% static 'jscss/jquery-2.1.4.min.js' %}"></script>
+	<script src="{% static 'jscss/bootstrap.min.js' %}"></script>
+	<script src="{% static 'jscss/my.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'jscss/bootstrap.min.css' %}">
+	<link rel="stylesheet" href="{% static 'jscss/style.css' %}">
+	<script>
+		function login(){
+			var id = $("#id").val();
+			var password = $("#password").val();
+			var identity = '';
+			var radio = document.getElementsByName('identity');
+			for(var i = 0 ; i < radio.length ; i++){
+				if(radio[i].checked){
+					identity = radio[i].value;
+				}
+			}
+			if(id == ''){
+				alert('请输入学号/教工号');
+				return;
+			}
+			else if(password == ''){
+				alert('请输入密码');
+				return;
+			}
+			else if(identity == ''){
+				alert('请选择登录身份');
+				return;
+			}
+			var url = '/CoPlat/login_verify/';
+			$.post(url, {Id: id , Password: password , Identity : identity}).success(function(data){
+				var json = eval('(' + data + ')');
+				/*
+				* 返回如下形式json:(成功返回Success，失败返回Fail)
+				* {
+				* 	"Status":"Success"
+				* }
+				* */
+				if(json['Status'] == 'Success'){
+					setCookie('userid', id, 1);
+					window.location.href = '/CoPlat/student_load/';
+				}else if(json['Status'] == 'Fail'){
+					alert('登录失败！请检查登录信息填写是否正确！')
+				}
+			});
+		}
+
+	</script>
+	<style>
+		#login-container{
+			margin-left: 12rem;
+			margin-right: 12rem;
+			margin-bottom: 4rem;
+			border-radius: 16px;
+			background-color: rgba(255,255,255,0.75);
+			background-size: cover;
+		}
+		#login-container #login{
+			padding-top: 16%;
+			padding-bottom: 20%;
+			padding-left: 4rem;
+			padding-right: 2rem;
+		}
+		#loginimage{
+			max-height: 40rem;
+			border-radius: 16px;
+		}
+	</style>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-5">
+			<div id="title">
+				在线协同教学系统
+			</div>
+		</div>
+	</div>
+</div>
+<div id="login-container">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-7" style="text-align: left;padding-left: 0">
+				<img id="loginimage" src="{% static 'res/plane.jpg' %}">
+			</div>
+			<div class="col-md-5">
+				<div id="login">
+					<label for="id">学号/教工号</label>
+					<input type="text" class="form-control" id="id" placeholder="请输入学号/教工号">
+					<label for="password">密码</label>
+					<input type="password" class="form-control" id="password" placeholder="请输入密码">
+					<div class="form-group">
+						<div class="radio-inline">
+							<label>
+								<input type="radio" name="identity" value="student" id="student">
+								学生
+							</label>
+						</div>
+						<div class="radio-inline">
+							<label>
+								<input type="radio" name="identity" value="teacher" id="teacher">
+								教师
+							</label>
+						</div>
+					</div>
+					<button class="btn btn-default" onclick="login()" >登录</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

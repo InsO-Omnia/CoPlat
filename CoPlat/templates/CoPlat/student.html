@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统</title>
+	<script src="./jscss/jquery-2.1.4.min.js"></script>
+	<script src="./jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="./jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="./jscss/style.css">
+	<script src="./jscss/my.js"></script>
+	<script>
+		$(document).ready(function(){
+			var userid = getCookie('userid');
+			var userinfo = $('#userinfo');
+			var str = '';
+			str = str + '<div> 欢迎您，' + userid + '</div>';
+			userinfo.empty();
+			userinfo.append(str);
+		});
+
+	</script>
+	<style>
+
+		#userinfo{
+			text-align: center;
+			padding-top: 4rem;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="item">
+					<a href="./studentCourse.html" target="_self">查看课程</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="" target="_self">组建队伍</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="" target="_self">修改个人信息</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+/**
+ * Created by Zetta on 2016/7/3.
+ */
+
+body{
+	font-family: Microsoft Yahei;
+	background: url(../res/bg.jpg) no-repeat center top;
+}
+
+#title{
+	margin-top: 4rem;
+	margin-bottom: 4rem;
+	margin-left: 16rem;
+	font-size: xx-large;
+}
+
+#userinfo{
+	text-align: center;
+	padding-top: 4rem;
+	font-weight: bold;
+}
+
+#nav{
+	background-color: #c8dd95;
+	border-radius: 6px;
+	padding-left: 2rem;
+}
+#nav .item{
+	background-color: #c8dd95;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	text-align: center;
+}
+#nav .item a{
+	color: black;
+}
+#nav .selecteditem{
+	background-color: #000000 ;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	text-align: center;
+}
+#nav .selecteditem a{
+	color: white;
+}
