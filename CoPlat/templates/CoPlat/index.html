@@ -11,7 +11,10 @@
 	<link rel="stylesheet" href="{% static 'jscss/style.css' %}">
 	<script>
     function login(){
+    $.post('/CoPlat/get_semester_response/').success(function(data){
+    window.alert(data);
     window.location.href = '/CoPlat/login_load/';
+    })
     }
 	</script>
 	<style>

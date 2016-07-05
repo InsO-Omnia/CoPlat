@@ -29,7 +29,7 @@ from django.contrib.auth.models import User
 #######################################################################
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete = models.CASCADE) 
+    user = models.OneToOneField(User, on_delete = models.CASCADE)
     Id = models.CharField(max_length = 50, primary_key = True)
 
 class Teacher(models.Model):
@@ -48,7 +48,14 @@ class Semester(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
     Start_Date = models.DateField()
     End_Date = models.DateField()
-    Duration_Weeks = models.IntegerField()
+    Duration_Weeks = models.PositiveIntegerField()
+    def get_semester_info(self):
+        info = {
+            "starttime" : str(self.Start_Date),
+            "endtime" : str(self.End_Date),
+            "weeks" : str(self.Duration_Weeks),
+        }
+        return info
 
 class Course(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
@@ -56,9 +63,10 @@ class Course(models.Model):
     Credit = models.FloatField(max_length = 10)
     Start_Date = models.DateField()
     End_Date = models.DateField()
-    Duration = models.DurationField(max_length = 50)
+    Duration = models.PositiveIntegerField()
     Enrolled_Students = models.ManyToManyField(Student, through = 'Enrollment')
     Course_Instructors = models.ManyToManyField(Teacher, through = 'Instruction')
+    semester = models.ForeignKey(Semester, on_delete = models.CASCADE)
 
 class Coursework(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
@@ -73,7 +81,18 @@ class Resource(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
     Description = models.CharField(max_length = 2000)
     Attachment = models.FileField(upload_to = 'Resource')
-    Category = models.CharField(max_length = 50)
+    #Choice for category
+    UN = 'uncategoried'
+    HA = 'handouts'
+    VE = 'vedio'
+    DO = 'documentation'
+    Category_Choice = {
+        (UN, 'UNCATEGORIED'),
+        (HA, 'HANDOUTS'),
+        (VE, 'VEDIO'),
+        (DO, 'DOCUMENTATION'),
+    }
+    Category = models.CharField(max_length = 20, choices = Category_Choice, default = UN,)
     course = models.ForeignKey(Course, on_delete = models.CASCADE)
 
 
@@ -94,12 +113,12 @@ class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 class Instruction(models.Model):
-    Teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    Course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 class Assignment(models.Model):
-    Student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    Coursework = models.ForeignKey(Coursework, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    coursework = models.ForeignKey(Coursework, on_delete=models.CASCADE)
     Content = models.CharField(max_length=2000)
     Attachment = models.FileField(upload_to = 'Coursework')
     Score = models.IntegerField()
