@@ -21,25 +21,49 @@ body{
 }
 
 #nav{
-	background-color: #c8dd95;
+	background-color: #00acc1;
 	border-radius: 6px;
 	padding-left: 2rem;
 }
 #nav .item{
-	background-color: #c8dd95;
+	background-color: #00acc1;
 	padding-top: 0.5rem;
 	padding-bottom: 0.5rem;
 	text-align: center;
 }
 #nav .item a{
-	color: black;
+	color: #e0f7fa;
 }
 #nav .selecteditem{
-	background-color: #000000 ;
+	background-color: #00acc1;
 	padding-top: 0.5rem;
 	padding-bottom: 0.5rem;
 	text-align: center;
 }
 #nav .selecteditem a{
-	color: white;
+	color: #006064;
+}
+
+#userinfo{
+	text-align: center;
+	padding-top: 4rem;
+	font-weight: bold;
+}
+
+#maincontainerL{
+	background-color: rgba(255,255,255,0.8);
+	background-size: contain;
+	min-height: 36rem;
+	margin-top: 2rem;
+	padding: 1.5rem;
+	border-radius: 8px;
+    text-align: center;
+}
+#maincontainerR{
+	background-color: rgba(255,255,255,0.8);
+	background-size: contain;
+	min-height: 36rem;
+	margin-top: 2rem;
+	padding: 1.5rem;
+	border-radius: 8px;
 }

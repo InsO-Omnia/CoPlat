@@ -96,6 +96,7 @@ class Resource(models.Model):
     course = models.ForeignKey(Course, on_delete = models.CASCADE)
 
 
+
 # class Team(models.Model):
 #     No = models.CharField(max_length = 128)
 #     Name = models.CharField(max_length = 500)

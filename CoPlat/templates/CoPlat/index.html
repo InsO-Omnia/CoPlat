@@ -10,11 +10,47 @@
 	<link rel="stylesheet" href="{% static 'jscss/bootstrap.min.css' %}">
 	<link rel="stylesheet" href="{% static 'jscss/style.css' %}">
 	<script>
+    // using jQuery
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+ var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
     function login(){
-    $.post('/CoPlat/get_semester_response/').success(function(data){
-    window.alert(data);
-    window.location.href = '/CoPlat/login_load/';
-    })
+        $.post('set_coursework_info/', {Studentid : "11110011", Courseworkno : "000202"}).success(function(data){
+        var json = eval('(' + data + ')');
+        if(json['Status'] == 'Success'){
+            window.location.href = "file_download_response/";
+        }
+        else {
+            alert('Load Failure!');
+        }
+       }
+      )
+                         
     }
 	</script>
 	<style>
@@ -57,7 +93,7 @@
 			<div class="col-md-5">
 				<div id="login">
             Welcome!
-					  <button class="btn btn-default" onclick="login()" >登录</button>
+					  <button class="btn btn-default" onclick = "login()" >登录</button>
 				</div>
       </div>
 		</div>

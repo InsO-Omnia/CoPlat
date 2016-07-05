@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import loader
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 import json
-
+from django.views.generic import View
+from django.core.files.base import ContentFile
 from .models import *
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import StreamingHttpResponse
 
 import os
 
@@ -35,6 +37,7 @@ import os
 # adding new functions.
 #######################################################################
 
+@ensure_csrf_cookie
 def index_load(request):
     template = loader.get_template('CoPlat/index.html')
     # use context if template variable is included in the respective page.
@@ -49,6 +52,13 @@ def login_load(request):
 
 def student_load(request):
     template = loader.get_template('CoPlat/student.html')
+    # use context if template variable is included in the respective page.
+    context = {}
+    return HttpResponse(template.render(context, request))
+
+### test for file upload
+def upload_load(request):
+    template = loader.get_template('CoPlat/test_upload.html')
     # use context if template variable is included in the respective page.
     context = {}
     return HttpResponse(template.render(context, request))
@@ -100,8 +110,8 @@ def login_verify(request):
                 res = "{Status : 'Success'}"
             else:
                 res = "{Status : 'Fail'}"
-    encodedjson = json.dumps(res)
-    return HttpResponse(encodedjson, content_type="application/json")
+    response = json.dumps(res)
+    return HttpResponse(response, content_type="application/json")
 
 
 ########################################################################
@@ -119,11 +129,66 @@ def login_verify(request):
 # Responses for requests from students.
 #######################################################################
 
+def coursework_upload_response(request):
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id','')
+        coursework_no = request.POST.get('coursework_no','')
+        rela_course = Course.objects.get(No = coursework_no)
+        upload_file = request.FILES.get('File','')
+        result = "{Status : 'Fail'}"
+        if upload_file:
+            file_content = ContentFile(upload_file.read())
+            new_assignment = Assignment(student = Student.objects.get(Id = student_id), coursework = Coursework.objects.get(No = coursework_no))
+            new_assignment.Attachment.save(upload_file.name, file_content)
+            new_assignment.save()
+            result = "{Status : 'Success'}"
+    response = json.dumps(result)
+    return HttpResponse(response, content_type="application/json")
 
 #######################################################################
 # Responses for requests from teachers.
 #######################################################################
 
+@csrf_exempt
+def resource_upload_response(request):
+    if request.method == 'POST':
+        resource_no = '000101'
+        rela_course = Course.objects.get(No = '0001') 
+        resource_category = request.POST.get('Type','')
+        upload_file = request.FILES.get('File','')
+        result = "{Status : 'Fail'}"
+        if upload_file:
+            file_content = ContentFile(upload_file.read())
+            new_resource = Resource(No = resource_no, Category = resource_category, course = rela_course)
+            new_resource.Attachment.save(upload_file.name, file_content)
+            new_resource.save()
+            result = "{Status : 'Success'}"
+    response = json.dumps(result)
+    return HttpResponse(response, content_type="application/json")
+
+### Global variables to set coursework info
+global Student_Id
+global Coursework_No
+
+def set_coursework_info(request):
+    global Student_Id
+    global Coursework_No
+    Student_Id = request.POST.get('Studentid','')
+    Coursework_No = request.POST.get('Courseworkno','')
+    if Student_Id != "" and Coursework_No != "":
+        response = json.dumps("{Status : 'Success'}")
+    else:
+        response = json.dumps("{Status : 'Fail'}")
+    return HttpResponse(response, content_type="application/json")
+
+def file_download_response(request):
+    global Student_Id
+    global Coursework_No
+    file_name = Student_Id + '_' + Coursework_No + '.pdf'
+    path = "/home/cloudyrie/pyenv/base/CoPlat/media/Coursework/" + file_name
+    response = open(path, "rb").read()
+    ### content_type can be specified here!
+    return HttpResponse(response, content_type="application/octet-stream")
 
 #######################################################################
 # Responses for requests from administrators.
