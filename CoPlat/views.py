@@ -3,12 +3,9 @@ from django.http import HttpResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 import json
-from django.views.generic import View
 from django.core.files.base import ContentFile
 from .models import *
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import StreamingHttpResponse
-
 import os
 
 # Create your views here.
