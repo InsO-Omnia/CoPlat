@@ -175,7 +175,7 @@ $.ajaxSetup({
 		}
 		function downloadHomework(){
 			                      //下载作业
-        $.post('set_coursework_info/', {Studentid : "s1111000", Courseworkno : "000101"}).success(function(data){
+        $.post('set_coursework_info/', {Studentid : "s11110000", Courseworkno : "000101"}).success(function(data){
         var json = eval('(' + data + ')');
         if(json['Status'] == 'Success'){
             window.location.href = "file_download_response/";
@@ -183,7 +183,9 @@ $.ajaxSetup({
         else {
             alert('Load Failure!');
         }
-       });
+       }
+      )
+          
 		}
 		function submitComment(){
 			//提交作业评论
@@ -214,7 +216,7 @@ $.ajaxSetup({
 				return;
 			}
 
-			var fileController = 'http://127.0.0.1/DemoWebApp/tpreceivefile.php';
+			var fileController = '/CoPlat/resource_upload_response/';
 
 			var courseid = document.getElementById('courseid').innerHTML;
 
@@ -229,8 +231,8 @@ $.ajaxSetup({
 			xhr.open("post", fileController, true);
 			xhr.onreadystatechange = function () {
 				if(xhr.readyState == 4 && xhr.status == 200){
-					alert(xhr.responseText);
-					var json = eval('(' + xhr.responseText + ')');
+					var data = eval('(' + xhr.responseText + ')');
+          var json = eval('(' + data + ')');
 					if(json['Status'] == 'Success'){
 						document.getElementById('uploadstatus').innerHTML = '<span style="color: green">文件上传成功！</span>';
 					}
@@ -342,7 +344,7 @@ $.ajaxSetup({
 							<label>当前学生学号：</label>
 							<label id="studentid"></label>
 							<div class="form-group">
-								<button class="btn btn-link">下载作业</button>
+								<button class="btn btn-link" onclick = "downloadHomework()">下载作业</button>
 							</div>
 							<div class="form-group">
 								<label for="comment">评论：</label>
