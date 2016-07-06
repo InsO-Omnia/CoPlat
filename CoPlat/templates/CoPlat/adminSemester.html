@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统-管理员</title>
+	<script src="./jscss/jquery-2.1.4.min.js"></script>
+	<script src="./jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="./jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="./jscss/style.css">
+	<script src="./jscss/my.js"></script>
+	<script>
+		$(document).ready(adminReady);
+		function lookSemester(){
+			//查看当前学期
+			document.getElementById('set').style.display = 'none';
+			document.getElementById('look').style.display = 'block';
+			var url = '';
+			$.post(url).success(function(data){
+				var json = eval('(' + data + ')');
+				var stime = json['starttime'];
+				var etime = json['endtime'];
+				var weeks = json['weeks'];
+				document.getElementById('lstarttime').innerHTML = '学期开始日期：' + stime;
+				document.getElementById('lendtime').innerHTML = '学期结束日期：' + etime;
+				document.getElementById('lweeks').innerHTML = '周数：' + weeks;
+			});
+		}
+		function setSemester(){
+			document.getElementById('look').style.display = 'none';
+			document.getElementById('set').style.display = 'block';
+		}
+		function changeSemester(){
+			//设置当前学期
+			var stime = $('#sstarttime').val();
+			var etime = $('#sendtime').val();
+			var weeks = $('#sweeks').val();
+			if(stime == '' || etime == '' || weeks == ''){
+				alert('请填写完整相关信息！');
+				return;
+			}
+			if(!checkDate(stime, etime, weeks)){
+				alert('相关信息填写有误(起始日期与周数不同)，请检查！')
+			}
+			var url = '';
+			$.post(url, {StartTime: stime, EndTime: etime, Weeks: weeks}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('学期设置成功!');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('学期设置失败!请检查相关信息填写是否正确或稍候再试。');
+				}
+			});
+		}
+	</script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统-<span style="color: red;font-weight: bold">管理员</span>
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="selecteditem">
+					<a href="./adminSemester.html" target="_self">学期管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="./adminCourse.html" target="_self">课程管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="" target="_self">用户信息管理(暂不可用)</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2">
+			<div id="maincontainerL">
+				<div class="form-group">
+					<button class="btn btn-default" onclick="lookSemester()">查看当前学期信息</button>
+				</div>
+				<div class="form-group">
+					<button class="btn btn-default" onclick="setSemester()">设置当前学期信息</button>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-10">
+			<div id="maincontainerR">
+				<div id="look" style="display: none">
+					<p id="lstarttime"></p>
+					<p id="lendtime"></p>
+					<p id="lweeks"></p>
+				</div>
+				<div id="set" style="display: none">
+					<div class="form-group">
+						<label for="sstarttime">学期开始时间</label>
+						<input id="sstarttime" type="date">
+					</div>
+					<div class="form-group">
+						<label for="sendtime">学期结束时间</label>
+						<input id="sendtime" type="date">
+					</div>
+					<div class="form-group">
+						<label for="sweeks">学期周数</label>
+						<input id="sweeks" type="text">
+					</div>
+					<div class="form-group">
+						<button class="btn btn-default" onclick="changeSemester()">提交</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

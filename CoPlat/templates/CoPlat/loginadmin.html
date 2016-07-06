@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统-登录</title>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<script src="../../static/jscss/my.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script>
+		function login(){
+			//管理员登录
+			var id = $("#id").val();
+			var password = $("#password").val();
+			var identity = 'administrator';
+			if(id == ''){
+				alert('请输入管理员编号');
+				return;
+			}
+			else if(password == ''){
+				alert('请输入密码');
+				return;
+			}
+            var url = '/CoPlat/login_verify/';
+{#			var url = 'http://127.0.0.1/DemoWebApp/tplogin.php';#}
+			$.post(url, {Id: id , Password: password , Identity : identity}).success(function(data){
+				var json = eval('(' + data + ')');
+				/*
+				 * 返回如下形式json:(成功返回Success，失败返回Fail)
+				 * {
+				 * 	"Status":"Success"
+				 * }
+				 * */
+				if(json['Status'] == 'Success'){
+					setCookie('adminid', id, 0.04);
+					window.location.href = '/CoPlat/administrator_load/';
+				}else if(json['Status'] == 'Fail'){
+					alert('登录失败！请检查登录信息填写是否正确！')
+				}
+			});
+		}
+
+	</script>
+	<style>
+		#login-container{
+			margin-left: 12rem;
+			margin-right: 12rem;
+			margin-bottom: 4rem;
+			border-radius: 16px;
+			background-color: rgba(255,255,255,0.75);
+			background-size: cover;
+		}
+		#login-container #login{
+			padding-top: 16%;
+			padding-bottom: 20%;
+			padding-left: 4rem;
+			padding-right: 2rem;
+		}
+		#loginimage{
+			max-height: 40rem;
+			border-radius: 16px;
+		}
+	</style>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统-<span style="color: red;font-weight: bold">管理员登录</span>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="login-container">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-7" style="text-align: left;padding-left: 0">
+				<img id="loginimage" src="../../static/res/plane.jpg">
+			</div>
+			<div class="col-md-5">
+				<div id="login">
+					<div class="form-group">
+						<label for="id">管理员编号</label>
+						<input type="text" class="form-control" id="id" placeholder="请输管理员编号">
+					</div>
+					<div class="form-group">
+						<label for="password">密码</label>
+						<input type="password" class="form-control" id="password" placeholder="请输入密码">
+					</div>
+					<div class="form-group">
+						<button class="btn btn-default" onclick="login()" >登录</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

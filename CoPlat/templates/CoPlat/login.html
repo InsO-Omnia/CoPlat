@@ -40,13 +40,10 @@
 				* {
 				* 	"Status":"Success"
 				* }
-				                  * */
-                          alert(data);
-                          alert(json);
-                          alert(json['Status']);
+			  * */
 				if(json['Status'] == 'Success'){
 					setCookie('userid', id, 1);
-					window.location.href = '/CoPlat/student_load/';
+					window.location.href = '/CoPlat/student_load';
 				}else if(json['Status'] == 'Fail'){
 					alert('登录失败！请检查登录信息填写是否正确！')
 				}

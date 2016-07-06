@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统-管理员</title>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
+	<script>
+		$(document).ready(adminReady);
+	</script>
+	<style>
+
+	</style>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统-<span style="color: red;font-weight: bold">管理员</span>
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="item">
+					<a href="./adminSemester.html" target="_self">学期管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+{#					<a href="adminCourse.html" target="_self" >课程管理</a>#}
+                    <a href="/CoPlat/adminCourse_load" target="_self" >课程管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="" target="_self" disabled="true">用户信息管理(暂不可用)</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

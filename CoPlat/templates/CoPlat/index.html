@@ -39,16 +39,17 @@ $.ajaxSetup({
         }
     }
 });
-    function login(){
-        $.post('set_coursework_info/', {Studentid : "11110011", Courseworkno : "000202"}).success(function(data){
-        var json = eval('(' + data + ')');
-        if(json['Status'] == 'Success'){
-            window.location.href = "file_download_response/";
-        }
-        else {
-            alert('Load Failure!');
-        }
-       }
+                            function login(){
+                            window.location.href = 'CoPlat/login_load'
+       // $.post('set_coursework_info/', {Studentid : "11110011", Courseworkno : "000202"}).success(function(data){
+       // var json = eval('(' + data + ')');
+       // if(json['Status'] == 'Success'){
+       //     window.location.href = "file_download_response/";
+       // }
+       // else {
+       //     alert('Load Failure!');
+      //  }
+      // }
       )
                          
     }

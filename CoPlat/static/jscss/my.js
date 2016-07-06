@@ -46,13 +46,13 @@ function adminQuit(cname){
 function teacherQuit(cname){
 	clearCookie(cname);
 	alert('已成功退出');
-	window.location.href = './login.html'
+	window.location.href = 'login_load'
 }
 
 function studentQuit(cname){
 	clearCookie(cname);
 	alert('已成功退出');
-	window.location.href = './login.html'
+	window.location.href = 'login_load'
 }
 
 function adminReady(){
@@ -64,7 +64,7 @@ function adminReady(){
 	}
 	var userinfo = $('#userinfo');
 	var str = '';
-	str = str + '<div> 欢迎您，' + userid + '</div><br>';
+	str = str + '<div> 欢迎您，管理员 ' + userid + '</div><br>';
 	str = str + '<button class="btn btn-default" onclick="adminQuit(\'adminid\')">' + '退出登录' + '</button>';
 	userinfo.empty();
 	userinfo.append(str);
@@ -74,12 +74,12 @@ function teacherReady(){
 	var userid = getCookie('teacherid');
 	if(userid == ''){
 		alert('未登录系统，请登录！');
-		window.location.href = './login.html';
+		  window.location.href = 'login_load';
 		return;
 	}
 	var userinfo = $('#userinfo');
 	var str = '';
-	str = str + '<div> 欢迎您，' + userid + '</div><br>';
+	str = str + '<div> 欢迎您，' + userid + ' 老师</div><br>';
 	str = str + '<button class="btn btn-default" onclick="teacherQuit(\'teacherid\')">' + '退出登录' + '</button>';
 	userinfo.empty();
 	userinfo.append(str);
@@ -89,12 +89,12 @@ function studentReady(){
 	var userid = getCookie('studentid');
 	if(userid == ''){
 		alert('未登录系统，请登录！');
-		window.location.href = './login.html';
+		  window.location.href = 'login_load';
 		return;
 	}
 	var userinfo = $('#userinfo');
 	var str = '';
-	str = str + '<div> 欢迎您，' + userid + '</div><br>';
+	str = str + '<div> 欢迎您，' + userid + ' 同学</div><br>';
 	str = str + '<button class="btn btn-default" onclick="studentQuit(\'studentid\')">' + '退出登录' + '</button>';
 	userinfo.empty();
 	userinfo.append(str);
@@ -109,25 +109,25 @@ function getFileFormat(filename){
 function checkFileType(type, format){
 	var result = true;
 	switch (type){
-		case 'handouts':
+		case 'HA':
 			if(format != '.ppt' && format != '.pptx' && format != '.pdf'){
 				result = false;
 			}
 			break;
 
-		case 'documentation':
+		case 'DO':
 			if(format != '.doc' && format != '.docx' && format != '.pdf'){
 				result = false;
 			}
 			break;
 
-		case 'vedio':
+		case 'VE':
 			if(format != '.mp4'){
 				result = false;
 			}
 			break;
 
-		case 'uncategoried':
+		case 'UN':
 			result = true;
 			break;
 

@@ -1,0 +1,227 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统</title>
+	<script src="{% static 'jscss/jquery-2.1.4.min.js' %}"></script>
+	<script src="{% static 'jscss/bootstrap.min.js' %}"></script>
+	<script src="{% static 'jscss/my.js' %}"></script>
+	<link rel="stylesheet" href="{% static 'jscss/bootstrap.min.css' %}">
+	<link rel="stylesheet" href="{% static 'jscss/style.css' %}">
+	<script>
+		//$(document).ready(studentReady);
+		function displayCourseList(){
+			//获取该学生的课程列表
+			var dc = $('#displaycourse');
+		var studentid = "s11110000"
+    //getCookie('studentid');
+			var url = 'student_courselist_response';
+			$.post(url, {StudentId: studentid}).success(function(data){
+        alert(data);
+        var json = eval('(' + data + ')');
+				var str = '';
+				var length = json.courses.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<li>' + '<button class="btn btn-link" style="padding: 0" onclick="displayCourseDetail(\'' + json.courses[i].CourseId + '\')">' + json.courses[i].CourseName + '</button>' +'</li>';
+				}
+				dc.empty();
+				dc.append(str);
+			});
+		}
+		function displayCourseDetail(courseid){
+			//显示课程详细信息
+			document.getElementById('displayhomeworklist').style.display = 'none';
+			document.getElementById('displayhomeworkdetail').style.display = 'none';
+			document.getElementById('coursedetail').style.display = 'block';
+			document.getElementById('displaycourseid').style.display = 'block';
+			document.getElementById('courseid').innerHTML = courseid;
+			var url = '/CoPlat/student_courselist_response';
+			var cd = $('#coursedetail');
+			$.post(url, {CourseId: courseid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var coursename = json['CourseName'];
+				var credit = json['Credit'];
+				var weeks = json['Weeks'];
+				var str = '';
+				str = str + '<li>' + '课程名称：' + coursename + '</li>';
+				str = str + '<li>' + '任课教师：' + '</li>';
+				var length = json.Teacher.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<li>' + json.Teacher[i].TeacherId + ' ' + json.Teacher[i].TeacherName + '</li>';
+				}
+				str = str + '<li>' + '课程学分：' + credit + '</li>';
+				str = str + '<li>' + '课程周数：' + weeks + '</li>';
+				str = str + '<li>' + '<button class="btn btn-default btn-xs" onclick="downloadSource()">' + '下载资源</button>' + '</li>';
+				str = str + '<li>' + '<button class="btn btn-default btn-xs" onclick="studentHomework()">' + '管理作业</button>' + '</li>';
+				cd.empty();
+				cd.append(str);
+			});
+		}
+		function downloadSource(){
+
+		}
+		function studentHomework(){
+			//获取该门课程的作业列表
+			document.getElementById('coursedetail').style.display = 'none';
+			document.getElementById('displayhomeworkdetail').display = 'none';
+			document.getElementById('displayhomeworklist').style.display = 'block';
+			var courseid = document.getElementById('courseid').innerHTML;
+			var studentid = getCookie('studentid');
+			var hl = $('#homeworklist');
+			var url = 'http://127.0.0.1/DemoWebApp/tphomeworklist.php';
+			$.post(url,{CourseId: courseid, StudentId: studentid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var str = '';
+				var length = getJsonLength(json);
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<li>' + '<button class="btn btn-link btn-xs" onclick="homeworkDetail(\'' + json[i] + '\')">' + json[i] + '</button>' + '</li>';
+				}
+				hl.empty();
+				hl.append(str);
+			});
+		}
+		function homeworkDetail(homeworkid){
+			//获取作业详情
+			document.getElementById('displayhomeworkdetail').style.display = 'block';
+			document.getElementById('homeworkid').innerHTML = homeworkid;
+			var url = 'http://127.0.0.1/DemoWebApp/tphomeworkdetail.php';
+			$.post(url, {HomeworkId:homeworkid}).success(function(data){
+				var json = eval('(' + data + ')');
+				document.getElementById('hdescription').innerHTML = '作业描述：' + json['Description'];
+				document.getElementById('hstarttime').innerHTML = '开始时间：' + json['StartTime'];
+				document.getElementById('hendtime').innerHTML = '结束时间：' + json['EndTime'];
+			});
+		}
+		function uploadFile(){
+			var si = document.getElementById('filetype').selectedIndex;
+			var filetype = document.getElementById('filetype').options[si].value;
+			var fileObj = document.getElementById('uploadsource').files[0];
+			if(!checkFileType(filetype, getFileFormat(fileObj.name))){
+				alert('文件格式不符，请重新选择！');
+				return;
+			}
+
+			var fileController = 'http://127.0.0.1/DemoWebApp/tpreceivefile.php';
+
+			var homeworkid = document.getElementById('homeworkid').innerHTML;
+			var studentid = getCookie('studentid');
+
+			var form = new FormData();
+			form.append("HomeworkId", homeworkid);
+			form.append("StudentId", studentid);
+			form.append("Type", filetype);
+			form.append("File", fileObj);
+
+			form.enctype = 'multipart/form-data';
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("post", fileController, true);
+			xhr.onreadystatechange = function () {
+				if(xhr.readyState == 4 && xhr.status == 200){
+					var data = xhr.responseText;
+					var json = eval('(' + data + ')');
+					if(json['Status'] == 'Success'){
+						document.getElementById('uploadstatus').innerHTML = '<span style="color: green">文件上传成功！</span>';
+					}
+					else{
+						document.getElementById('uploadstatus').innerHTML = '<span style="color: red">文件上传失败！</span>';
+					}
+				}
+			};
+			xhr.send(form);
+
+		}
+
+	</script>
+	<style>
+
+	</style>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="selecteditem">
+					<a href="" target="_self">查看课程</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="" target="_self">组建队伍(暂不可用)</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="" target="_self">查看课程(暂不可用)</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2">
+			<div id="maincontainerL">
+				<button class="btn btn-default" onclick="displayCourseList()">查看我的课程信息</button>
+				<ul id="displaycourse" style="margin-top:1.5rem">
+
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-10">
+			<div id="maincontainerR">
+				<div class="row">
+					<div class="col-md-3">
+						<div id="displaycourseid" style="display: none">
+							<label>当前课程ID：</label>
+							<label id="courseid"></label>
+						</div>
+						<div id="coursedetail"></div>
+						<div id="displayhomeworklist" style="display: none">
+							<ul id="homeworklist"></ul>
+						</div>
+					</div>
+					<div class="col-md-9">
+						<div id="displayhomeworkdetail" style="display: none">
+							<label>当前作业ID：</label>
+							<label id="homeworkid"></label>
+							<ul id="homeworkdetail">
+								<li id="hdescription"></li>
+								<li id="hstarttime"></li>
+								<li id="hendtime"></li>
+							</ul>
+							<div class="form-group">
+								<div class="form-group">
+									<p>上传作业：</p>
+									<label for="filetype">选择要上传的文件类型：</label>
+									<select id="filetype">
+										<option value="DO">文档[.doc/.docx/.pdf]</option>
+										<option value="UN">其他文件</option>
+									</select>
+								</div>
+								<input type="file" id="uploadsource">
+								<p id="uploadstatus"></p>
+							</div>
+							<button class="btn btn-default" onclick="uploadFile()">提交</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>
