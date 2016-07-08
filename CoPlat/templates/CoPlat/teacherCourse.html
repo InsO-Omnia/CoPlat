@@ -128,7 +128,8 @@
 			}
 			var url = '/CoPlat/add_coursework_response/';
 			$.post(url, {CourseId: courseid, Description: description, StartTime: starttime, EndTime: endtime}).success(function(data){
-				var json = eval('(' + data + ')');
+				                    var json = eval('(' + data + ')');
+                           // alert(json);
 				if(json['Status'] == 'Success'){
 					alert('作业添加成功！');
 					displayAddHomework();
@@ -167,8 +168,8 @@
 			var url = '/CoPlat/particular_courseworkpath_response/';
 			var path = '';
 			$.post(url, {StudentId: studentid, HomeworkId: homeworkid}).success(function(data){
-				var json = eval('(' + data + ')');
-				path = '.' + json['Path'];
+				var json = data;
+				path = json['Path'];
 				$('#download').attr('href', path);
 			});
 		}

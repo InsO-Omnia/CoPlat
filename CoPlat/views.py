@@ -175,12 +175,11 @@ def courseworklist_response(request):
     for i in range(len(coursework_list)):
         rela_coursework_no = str(coursework_list[i])
         response = response + "\"" + str(i) +  "\" : \"" + rela_coursework_no + "\","
-    response = response[0:-1] + "}"
-
+    if len(coursework_list) == 0:
+        response = response + "}"
+    else:
+        response = response[0:-1] + "}"
     response = json.dumps(response)
-    f = open("text.txt", "w")
-    f.write(response)
-    f.close()
     return HttpResponse(response, content_type="application/json")
 
 
@@ -233,9 +232,9 @@ def get_workInformation(request):
         if(w.No ==hwid):
             discription = w.Description
             StartTime = str(w.Start_Time)
-            StartTime = StartTime[0:9]
+            StartTime = StartTime[0:-6]
             EndTime = str(w.End_Time)
-            EndTime = EndTime[0:9]
+            EndTime = EndTime[0:-6]
             hw.append({"Description": discription, "StartTime": StartTime,"EndTime": EndTime})
 
     response = json.dumps(hw)
@@ -345,10 +344,13 @@ def coursework_studentlist_response(request):
 def particular_courseworkpath_response(request):
     rela_student = Student.objects.get(Id = request.POST.get('StudentId',''))
     rela_coursework = Coursework.objects.get(No = request.POST.get('HomeworkId',''))
-    rela_assign = Assignment.objects.get(No = rela_student.Id + rela_coursework.No)
-    path = '/CoPlat/media/Resource/' + rela_assign.Title
-    response = "{Path :" + path +"}"
-    return HttpResponse(json.dumps(response), content_type="application/json")
+    rela_assign = Assignment.objects.get(No = rela_student.Id + '_' + rela_coursework.No)
+    path = '/CoPlat/media/Coursework/' + rela_assign.Title
+    
+    response = {'Path': path}
+    response = json.dumps(response)
+    print(response)
+    return HttpResponse(response, content_type="application/json")
 
 @csrf_exempt
 def add_coursework_response(request):
@@ -520,14 +522,13 @@ def get_course_details(request):
 def allocate_students_to_course(request):
     courseid = request.POST.get('CourseId', '')
     studentid = request.POST.get('Studentid', '')
-
+    c = Course.objects.get(No=courseid)
+    s = Student.objects.get(Id=studentid)
     try:
-        c = Course.objects.get(No=courseid)
-        s = Student.objects.get(Id=studentid)
-        e = Enrollment.objects.get(student=s,course=c)
-
+        e = Enrollment.objects.get(student = s, course = c)
     except ObjectDoesNotExist:
         e = Enrollment(No = s.Id + '_' + c.No, student = s, course = c)
+        e.save()
         response = {'Status' : 'Success'}
     else:
         response = {'Status' : 'Fail'}
