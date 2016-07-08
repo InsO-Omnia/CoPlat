@@ -40,26 +40,26 @@ function getJsonLength(jsonObj){
 function adminQuit(cname){
 	clearCookie(cname);
 	alert('已成功退出');
-	window.location.href = './loginadmin.html'
+	window.location.href = '/CoPlat/'
 }
 
 function teacherQuit(cname){
 	clearCookie(cname);
 	alert('已成功退出');
-	window.location.href = 'login_load'
+	window.location.href = '/CoPlat/'
 }
 
 function studentQuit(cname){
 	clearCookie(cname);
 	alert('已成功退出');
-	window.location.href = 'login_load'
+	window.location.href = '/CoPlat/'
 }
 
 function adminReady(){
 	var userid = getCookie('adminid');
 	if(userid == ''){
 		alert('未以管理员身份登录系统，请登录！');
-		window.location.href = './loginadmin.html';
+		window.location.href = './CoPlat/admin_load/';
 		return;
 	}
 	var userinfo = $('#userinfo');
@@ -74,7 +74,7 @@ function teacherReady(){
 	var userid = getCookie('teacherid');
 	if(userid == ''){
 		alert('未登录系统，请登录！');
-		  window.location.href = 'login_load';
+		window.location.href = '/CoPlat/';
 		return;
 	}
 	var userinfo = $('#userinfo');
@@ -89,7 +89,7 @@ function studentReady(){
 	var userid = getCookie('studentid');
 	if(userid == ''){
 		alert('未登录系统，请登录！');
-		  window.location.href = 'login_load';
+		window.location.href = '/CoPlat/';
 		return;
 	}
 	var userinfo = $('#userinfo');
@@ -109,25 +109,25 @@ function getFileFormat(filename){
 function checkFileType(type, format){
 	var result = true;
 	switch (type){
-		case 'HA':
+		case 'handouts':
 			if(format != '.ppt' && format != '.pptx' && format != '.pdf'){
 				result = false;
 			}
 			break;
 
-		case 'DO':
+		case 'documentation':
 			if(format != '.doc' && format != '.docx' && format != '.pdf'){
 				result = false;
 			}
 			break;
 
-		case 'VE':
+		case 'vedio':
 			if(format != '.mp4'){
 				result = false;
 			}
 			break;
 
-		case 'UN':
+		case 'uncategoried':
 			result = true;
 			break;
 

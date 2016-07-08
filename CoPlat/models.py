@@ -97,6 +97,7 @@ class Coursework(models.Model):
 
 class Resource(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
+    Title = models.CharField(max_length = 200)
     Description = models.CharField(max_length = 2000)
     Attachment = models.FileField(upload_to = 'Resource')
     #Choice for category
@@ -112,6 +113,7 @@ class Resource(models.Model):
     }
     Category = models.CharField(max_length = 20, choices = Category_Choice, default = UN,)
     course = models.ForeignKey(Course, on_delete = models.CASCADE)
+    
 
 
 
@@ -128,16 +130,22 @@ class Resource(models.Model):
 #####################################################################
 
 class Enrollment(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True) 
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    
 
 class Instruction(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+
 class Assignment(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     coursework = models.ForeignKey(Coursework, on_delete=models.CASCADE)
+    Title = models.CharField(max_length = 200)
     Content = models.CharField(max_length=2000)
     Attachment = models.FileField(upload_to = 'Coursework')
     Score = models.IntegerField()

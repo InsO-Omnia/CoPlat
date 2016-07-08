@@ -3,18 +3,18 @@
 <head>
 	<meta charset="UTF-8">
 	<title>在线协同教学系统-管理员</title>
-	<script src="./jscss/jquery-2.1.4.min.js"></script>
-	<script src="./jscss/bootstrap.min.js"></script>
-	<link rel="stylesheet" href="./jscss/bootstrap.min.css">
-	<link rel="stylesheet" href="./jscss/style.css">
-	<script src="./jscss/my.js"></script>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
 	<script>
 		$(document).ready(adminReady);
 		function lookSemester(){
 			//查看当前学期
 			document.getElementById('set').style.display = 'none';
 			document.getElementById('look').style.display = 'block';
-			var url = '';
+			var url = '/CoPlat/get_semester_response/';
 			$.post(url).success(function(data){
 				var json = eval('(' + data + ')');
 				var stime = json['starttime'];
@@ -39,11 +39,12 @@
 				return;
 			}
 			if(!checkDate(stime, etime, weeks)){
-				alert('相关信息填写有误(起始日期与周数不同)，请检查！')
+				alert('相关信息填写有误(起始日期与周数不同)，请检查！');
 			}
-			var url = '';
+			var url = '/CoPlat/set_semester_response';
 			$.post(url, {StartTime: stime, EndTime: etime, Weeks: weeks}).success(function(data){
-				var json = eval('(' + data + ')');
+{#				var json = eval('(' + data + ')');#}
+                var json = data;
 				if(json['Status'] == 'Success'){
 					alert('学期设置成功!');
 				}
@@ -72,12 +73,12 @@
 		<div class="row">
 			<div class="col-md-2">
 				<div class="selecteditem">
-					<a href="./adminSemester.html" target="_self">学期管理</a>
+					<a href="/CoPlat/adminSemester_load/" target="_self">学期管理</a>
 				</div>
 			</div>
 			<div class="col-md-2">
 				<div class="item">
-					<a href="./adminCourse.html" target="_self">课程管理</a>
+					<a href="/CoPlat/adminCourse_load/" target="_self">课程管理</a>
 				</div>
 			</div>
 			<div class="col-md-2">

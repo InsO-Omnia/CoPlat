@@ -15,14 +15,14 @@
 			document.getElementById('createcourse').style.display = 'none';
 			document.getElementById('lookcourse').style.display = 'block';
 			var courselist = $('#courselist');
-{#			var url = 'http://127.0.0.1/DemoWebApp/tpcourselist.php';#}
-            var url = '/CoPlat/get_course_list/';
+			{#var url = 'http://127.0.0.1/DemoWebApp/tpcourselist.php';#}
+            var url = '/CoPlat/admin_courselist_response/';
 			$.post(url).success(function(data){
-				var json = eval('(' + data + ')');
+				var json =data;
 				var str = '';
 				var length = json.courses.length;
 				for(var i = 0 ; i < length ; i++){
-					str = str + '<li>' + '<button class="btn btn-link" onclick="displayCourseDetail(\'' + json.courses[i].CourseId + '\')">' + json.courses[i].CourseName + '</button>' +'</li>';
+					str = str + '<li>' + '<button class="btn btn-link" onclick="displayCourseDetail(\'' + json.courses[i]['CourseId'] + '\')">' + json.courses[i]['CourseName'] + '</button>' +'</li>';
 				}
 				courselist.empty();
 				courselist.append(str);
@@ -35,16 +35,21 @@
 		function createCourse(){
 			//建立新课程
 			var cname = $('#cname').val();
-			var cteacherid = $('#cteacherid').val();
+			var teacherid = '';
 			var ccredit = $('#ccredit').val();
 			var cweeks = $('#cweeks').val();
-			if(cname == '' || cteacherid == '' || ccredit == '' || cweeks == ''){
+			var csdate = $('#csdate').val();
+			var cedate= $('#cedate').val();
+			if(cname == '' || ccredit == '' || cweeks == '' || csdate == '' || cedate == ''){
 				alert('请填写完整相关信息！');
 				return;
 			}
-			var url = '';
-			$.post(url, {Name: cname, TeacherId: cteacherid, Credit: ccredit, Weeks: cweeks}).success(function(data){
-				var json = eval('(' + data + ')');
+			if(!checkDate(csdate, cedate, cweeks)){
+				alert('相关信息填写有误(起始日期与周数不同)，请检查！');
+			}
+			var url = '/CoPlat/create_new_course/';
+			$.post(url, {Name: cname, Credit: ccredit, Weeks: cweeks, StartDate : csdate, EndDate: cedate}).success(function(data){
+				var json = data;
 				if(json['Status'] == 'Success'){
 					alert('课程添加成功!');
 				}
@@ -52,13 +57,20 @@
 					alert('课程添加失败!请检查相关信息填写是否正确或稍候再试。');
 				}
 			});
+			cname.val('');
+			ccredit.val('');
+			cweeks.val('');
+			csdate.val('');
+			cedate.val('');
 		}
+
 		function displayCourseDetail(courseid){
 			//显示课程详细信息
-			var url = 'http://127.0.0.1/DemoWebApp/tpcoursedetail.php';
+			var url = '/CoPlat/get_course_details/';
+			{#var url = 'http://127.0.0.1/DemoWebApp/tpcoursedetail.php';#}
 			var cd = $('#coursedetail');
 			$.post(url, {CourseId: courseid}).success(function(data){
-				var json = eval('(' + data + ')');
+				var json = data;
 				var coursename = json['CourseName'];
 				var credit = json['Credit'];
 				var weeks = json['Weeks'];
@@ -87,9 +99,10 @@
 				alert('请填写学生学号！');
 				return;
 			}
-			var url = '';
+			var url = '/CoPlat/allocate_students_to_course/';
 			$.post(url,{CourseId: courseid, Studentid: studentid}).success(function(data){
-				var json = eval('(' + data + ')');
+{#				var json = eval('(' + data + ')');#}
+                var json = data;
 				if(json['Status'] == 'Success'){
 					alert('添加学生成功！');
 				}
@@ -118,12 +131,12 @@
 		<div class="row">
 			<div class="col-md-2">
 				<div class="item">
-					<a href="./adminSemester.html" target="_self">学期管理</a>
+					<a href="/CoPlat/adminSemester_load/" target="_self">学期管理</a>
 				</div>
 			</div>
 			<div class="col-md-2">
 				<div class="selecteditem">
-					<a href="./adminCourse.html" target="_self">课程管理</a>
+					<a href="/CoPlat/adminCourse_load/" target="_self">课程管理</a>
 				</div>
 			</div>
 			<div class="col-md-2">
@@ -157,26 +170,45 @@
 					</div>
 				</div>
 				<div id="createcourse" style="display: none">
-					<div class="form-group">
-						<label for="cname">课程名称　</label>
-						<input id="cname" type="text" >
-					</div>
-					<div class="form-group">
-						<label for="cteacherid">任课教师ID</label>
-						<input id="cteacherid" type="text">
-					</div>
-					<div class="form-group">
-						<label for="ccredit">课程学分　</label>
-						<input id="ccredit" type="text">
-					</div>
-					<div class="form-group">
-						<label for="cweeks">课程周数　</label>
-						<input id="cweeks" type="text">
-					</div>
-					<div class="form-group">
-						<button class="btn btn-default" onclick="createCourse()">提交</button>
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">课程名称</div>
+									<input class="form-control" id="cname" type="text" >
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">课程学分</div>
+									<input class="form-control" id="ccredit" type="text">
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">开始日期</div>
+									<input class="form-control" type="date" id="csdate">
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">结束日期</div>
+									<input class="form-control" type="date" id="cedate">
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">课程周数</div>
+									<input class="form-control" id="cweeks" type="text">
+								</div>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" onclick="createCourse()">提交<tton>
+							</div>
+						</div>
 					</div>
 				</div>
+
 			</div>
 		</div>
 	</div>

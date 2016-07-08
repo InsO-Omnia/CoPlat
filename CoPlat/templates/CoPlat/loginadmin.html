@@ -22,8 +22,7 @@
 				alert('请输入密码');
 				return;
 			}
-            var url = '/CoPlat/login_verify/';
-{#			var url = 'http://127.0.0.1/DemoWebApp/tplogin.php';#}
+			var url = '/CoPlat/login_verify/';
 			$.post(url, {Id: id , Password: password , Identity : identity}).success(function(data){
 				var json = eval('(' + data + ')');
 				/*

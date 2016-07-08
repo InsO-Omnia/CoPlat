@@ -1,14 +1,13 @@
-{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<title>在线协同教学系统-登录</title>
-	<script src="{% static 'jscss/jquery-2.1.4.min.js' %}"></script>
-	<script src="{% static 'jscss/bootstrap.min.js' %}"></script>
-	<script src="{% static 'jscss/my.js' %}"></script>
-	<link rel="stylesheet" href="{% static 'jscss/bootstrap.min.css' %}">
-	<link rel="stylesheet" href="{% static 'jscss/style.css' %}">
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<script src="../../static/jscss/my.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
 	<script>
 		function login(){
 			var id = $("#id").val();
@@ -35,15 +34,15 @@
 			var url = '/CoPlat/login_verify/';
 			$.post(url, {Id: id , Password: password , Identity : identity}).success(function(data){
 				var json = eval('(' + data + ')');
-				/*
-				* 返回如下形式json:(成功返回Success，失败返回Fail)
-				* {
-				* 	"Status":"Success"
-				* }
-			  * */
 				if(json['Status'] == 'Success'){
-					setCookie('userid', id, 1);
-					window.location.href = '/CoPlat/student_load';
+					if(identity == 'student'){
+						setCookie('studentid', id, 0.04);
+						window.location.href = '/CoPlat/student_load/';
+					}
+					else if(identity == 'teacher'){
+						setCookie('teacherid', id, 0.04);
+						window.location.href = '/CoPlat/teacher_load/';
+					}
 				}else if(json['Status'] == 'Fail'){
 					alert('登录失败！请检查登录信息填写是否正确！')
 				}
@@ -86,14 +85,18 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-md-7" style="text-align: left;padding-left: 0">
-				<img id="loginimage" src="{% static 'res/plane.jpg' %}">
+				<img id="loginimage" src="../../static/res/plane.jpg">
 			</div>
 			<div class="col-md-5">
 				<div id="login">
-					<label for="id">学号/教工号</label>
-					<input type="text" class="form-control" id="id" placeholder="请输入学号/教工号">
-					<label for="password">密码</label>
-					<input type="password" class="form-control" id="password" placeholder="请输入密码">
+					<div class="form-group">
+						<label for="id">学号/教工号</label>
+						<input type="text" class="form-control" id="id" placeholder="请输入学号/教工号">
+					</div>
+					<div class="form-group">
+						<label for="password">密码</label>
+						<input type="password" class="form-control" id="password" placeholder="请输入密码">
+					</div>
 					<div class="form-group">
 						<div class="radio-inline">
 							<label>

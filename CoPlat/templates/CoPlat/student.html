@@ -1,14 +1,13 @@
-{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<title>在线协同教学系统</title>
-	<script src="{% static 'jscss/jquery-2.1.4.min.js' %}"></script>
-	<script src="{% static 'jscss/bootstrap.min.js' %}"></script>
-	<script src="{% static 'jscss/my.js' %}"></script>
-	<link rel="stylesheet" href="{% static 'jscss/bootstrap.min.css' %}">
-	<link rel="stylesheet" href="{% static 'jscss/style.css' %}">
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
 	<script>
 		$(document).ready(studentReady);
 	</script>
@@ -31,7 +30,7 @@
 		<div class="row">
 			<div class="col-md-2">
 				<div class="item">
-					<a href="/student_courselist_response" target="_self">查看课程</a>
+					<a href="/CoPlat/student_course_load/" target="_self">查看课程</a>
 				</div>
 			</div>
 			<div class="col-md-2">
@@ -41,7 +40,7 @@
 			</div>
 			<div class="col-md-2">
 				<div class="item">
-					<a href="" target="_self">修改个人信息(暂不可用)</a>
+					<a href="./studentInformation.html" target="_self">管理个人信息</a>
 				</div>
 			</div>
 		</div>
