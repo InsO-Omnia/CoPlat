@@ -88,8 +88,10 @@
 			var str = '';
 			var url = '/CoPlat/resourcelist_load_response/';
 			$.post(url, {CourseId: courseid, Type: type}).success(function(data){
-				var json = eval('(' + data + ')');
-				var length = json.Resource.length;
+                           alert(data);
+                            var json = eval('(' + data + ')');
+				                    var length = json.Resource.length;
+                            
 				for(var i = 0 ; i < length ; i++){
 					str = str + '<li>' + '<a href="" id="'  + json.Resource[i].ResourceId + '" onclick="downloadResource(\'' + json.Resource[i].ResourceId +  '\')">' + json.Resource[i].ResourceDes + '</a>' + '</li>';
 				}
@@ -100,7 +102,7 @@
 					$('#' + json.Resource[j].ResourceId).attr('href', path);
 					//document.getElementById(json.Resource[j].ResourceId).href = '\"' + downloadResource(json.Resource[j].ResourceId) + '\"';
 				}
-			});
+			  }                   );
 
 		}
 		function studentHomework(){

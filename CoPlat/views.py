@@ -250,7 +250,7 @@ def resourcelist_load_response(request):
         print(resource_category)
         resource_list = Resource.objects.filter(Category = resource_category)
        
-        response = "{\"Resource\" : ["
+        response = "{\"Resource\" : [ "
         for element in resource_list:
             resource_des = element.Description
             if (resource_des == ''):
