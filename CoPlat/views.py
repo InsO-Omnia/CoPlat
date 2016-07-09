@@ -247,9 +247,7 @@ def resourcelist_load_response(request):
     if request.method == 'POST':
         rela_course = Course.objects.get(No = request.POST.get('CourseId','')) 
         resource_category = request.POST.get('Type','')
-        print(resource_category)
         resource_list = Resource.objects.filter(Category = resource_category)
-       
         response = "{\"Resource\" : [ "
         for element in resource_list:
             resource_des = element.Description
@@ -258,7 +256,7 @@ def resourcelist_load_response(request):
             resource_path = '/CoPlat/media/Resource/' + element.Title
             response = response + "{\"ResourceId\" : \"" + element.No + "\", \"ResourceDes\":\"" + resource_des + "\", \"ResourcePath\":\"" + resource_path +"\"},"
     response = response[0:-1] + "]}"
-    response = json.dumps(response)
+    print(response)
     return HttpResponse(response, content_type="application/json")
 
 @csrf_exempt
