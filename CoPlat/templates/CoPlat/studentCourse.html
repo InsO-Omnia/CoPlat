@@ -129,11 +129,12 @@
 			document.getElementById('uploadstatus').innerHTML = '';
 			document.getElementById('displayhomeworkdetail').style.display = 'block';
 			document.getElementById('homeworkid').innerHTML = homeworkid;
+<<<<<<< HEAD
       var studentid = getCookie('studentid');
 			var hc = $('#homeworkcontent');
 			hc.empty();
 			var str = '';
-			                      var url = '/CoPlat/get_workInformation/';
+			var url = '/CoPlat/get_workInformation/';
       $.post(url, {StudentId:studentid, HomeworkId:homeworkid}).success(function(data){
       var json = eval('(' + data + ')');
       document.getElementById('hdescription').innerHTML = '作业描述：' + json['Description'];

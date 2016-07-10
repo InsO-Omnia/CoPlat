@@ -4,6 +4,7 @@ from django.template import loader
 from django.views.decorators.csrf import csrf_exempt, csrf_exempt, ensure_csrf_cookie
 import json
 from datetime import datetime,timedelta
+import time
 from .models import *
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
@@ -179,15 +180,13 @@ def login_verify(request):
 def courseworklist_response(request):
     request_Id = request.POST.get('CourseId', '')
     rela_course = Course.objects.get(No = request_Id)
-    response = "{"
+    response = "{ \"Homeworks\": [ "
     coursework_list = list(rela_course.coursework_set.all())
-    for i in range(len(coursework_list)):
-        rela_coursework_no = str(coursework_list[i])
-        response = response + "\"" + str(i) +  "\" : \"" + rela_coursework_no + "\","
-    if len(coursework_list) == 0:
-        response = response + "}"
-    else:
-        response = response[0:-1] + "}"
+    for element in coursework_list:
+        rela_coursework_no = str(element)
+        rela_coursework = Coursework.objects.get(No = rela_coursework_no)
+        response = response + rela_coursework.get_coursework_info() + ","
+    response = response[0:-1] + "]}"
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
@@ -267,8 +266,10 @@ def resourcelist_load_response(request):
     if request.method == 'POST':
         rela_course = Course.objects.get(No = request.POST.get('CourseId','')) 
         resource_category = request.POST.get('Type','')
+        print(resource_category)
         resource_list = Resource.objects.filter(Category = resource_category)
-        response = "{\"Resource\" : [ "
+       
+        response = "{\"Resource\" : ["
         for element in resource_list:
             resource_des = element.Description
             if (resource_des == ''):
@@ -279,6 +280,35 @@ def resourcelist_load_response(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+# @csrf_exempt
+# def coursework_upload_response(request):
+#     if request.method == 'POST':
+#         student_id = request.POST.get('StudentId','')
+#         coursework_no = request.POST.get('HomeworkId','')
+#
+#         assign_no = student_id + '_' + coursework_no
+#         rela_coursework = Coursework.objects.get(No = coursework_no)
+#         upload_file = request.FILES.get('File','')
+#         result = "{Status : 'Fail'}"
+#         if upload_file:
+#             file_content = ContentFile(upload_file.read())
+#             file_type= upload_file.name.split(".")[-1]
+#             coursework_name = student_id + '_' +coursework_no + '.' + file_type
+#             try:
+#                 rela_assignment = Assignment.objects.get(No = assign_no)
+#             except ObjectDoesNotExist:
+#                 new_assignment = Assignment(No = assign_no, student = Student.objects.get(Id = student_id), coursework = Coursework.objects.get(No = coursework_no), Title = coursework_name, Score = 0)
+#                 new_assignment.Attachment.save(coursework_name, file_content)
+#                 new_assignment.save()
+#             else:
+#                 rela_assignment.Attachment.save(coursework_name, file_content)
+#             result = "{Status : 'Success'}"
+#
+#     response = json.dumps(result)
+#     return HttpResponse(response, content_type="application/json")
+
+
+
 @csrf_exempt
 def coursework_upload_response(request):
     if request.method == 'POST':
@@ -286,8 +316,9 @@ def coursework_upload_response(request):
         coursework_no = request.POST.get('HomeworkId','')
         content = request.POST.get('TextHomework','')
         assign_no = student_id + '_' + coursework_no
-        rela_coursework = Coursework.objects.get(No = coursework_no)
-        upload_file = request.FILES.get('File','')
+        rela_coursework = Coursework.objects.get(No=coursework_no)
+        upload_file = request.FILES.get('File', '')
+
         result = "{Status : 'Fail'}"
         try:
             rela_assign = Assignment.objects.get(No = assign_no)
@@ -320,7 +351,6 @@ def coursework_upload_response(request):
             result = "{Status : 'Success'}"
     response = json.dumps(result)
     return HttpResponse(response, content_type="application/json")
-
 #######################################################################
 # Responses for requests from teachers.
 #######################################################################
@@ -401,7 +431,7 @@ def add_coursework_response(request):
     endtime = endtime + timedelta(hours=8)
     try:
         c = Course.objects.get(No=courseid)
-        cw = Coursework(No=courseid + '_' + str(Coursework.objects.count() + 1), Description=description, Start_Time=starttime, End_Time=endtime,course=c)
+        cw = Coursework(No=courseid + '-' + str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())), Description=description, Start_Time=starttime, End_Time=endtime,course=c)
         cw.save()
     except:
         response = {'Status': 'Fail'}
@@ -670,6 +700,7 @@ def allocate_teachers_to_course(request):
 
 
 ###need reconsidered
+@csrf_exempt
 def team_build_response(request):
     try:
         rela_course = Course.objects.get(No = request.POST.get('CourseId',''))
@@ -693,6 +724,7 @@ def team_build_response(request):
             response = json.dumps({'Status' : 'Success'})
             return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def team_memberlist_response(request):
     rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
     response = "{\"Members\": [ "
@@ -705,6 +737,7 @@ def team_memberlist_response(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def leader_switch_response(request):
     try:
         rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
@@ -718,6 +751,7 @@ def leader_switch_response(request):
         response = json.dumps({'Status' : 'Success'})
         return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def display_candidateslist_response(request):
     rela_team = Course.objects.get(No = request.POST.get('TeamId',''))
     candidates_list = list(Team_Application.objects.filter(Response_Status = 'waiting'))
@@ -730,12 +764,14 @@ def display_candidateslist_response(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def team_notready_details_response(request):
     rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
     response = "{\"TeamName\": \"" + rela_team.Name + "\",\"TeamDes\": \"" + rela_team.Description + "\", \"TeamLimit\": " + str(rela_team.Limit - rela_team.Capacity) + "]}"
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def team_application_response(request):
     rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
     rela_student = Student.objects.get(No = request.POST.get('StudentId',''))
@@ -764,6 +800,7 @@ def team_application_response(request):
         response = json.dumps({'Status' : 'Fail'})
         return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def application_management_response(request):
     rela_student = Student.objects.get(No = request.POST.get('StudentId',''))
     application_list = list(Team_Application.objects.filter(student = rela_student))
@@ -776,12 +813,14 @@ def application_management_response(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def application_getstatus_response(request):
     rela_application = Team_Application.objects.get(No = request.POST.get('ApplicationId',''))
     response = { Status : rela_application.Response_Status}
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def application_setstatus_response(request):
     rela_student = Student.objects.get(Id = request.POST.get('StudentId',''))
     rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
@@ -801,6 +840,7 @@ def application_setstatus_response(request):
         response = json.dumps({'Status' : 'Success'})
         return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def team_isready_response(requset):
     try:
         rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
@@ -812,6 +852,7 @@ def team_isready_response(requset):
         response = json.dumps({Status : str(rela_team.Readily_Builded)})
 
 ### need to check that is any member already participate in the course.
+@csrf_exempt
 def team_setready_response(request):
     try:
         rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
@@ -824,6 +865,7 @@ def team_setready_response(request):
         response = json.dumps({'Status' : 'Success'})
         return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def display_enrolledteams_response(request):
     rela_course = Course.objects.get(No = request.POST.get('CourseId',''))
     enrolled_teams_list = list(Team_Enrollment.objects.filter(course = rela_course))
@@ -836,6 +878,7 @@ def display_enrolledteams_response(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def display_readyteams_response(request):
     rela_course = Course.objects.get(No = request.POST.get('CourseId',''))
     ready_teams_list = list(rela_course.team_set.filter(Readily_Builded = True, Admittance_Status = 'waiting'))
@@ -848,6 +891,7 @@ def display_readyteams_response(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def team_details_response(request):
     rela_team = Team.objects.get(No = request.POST.get('TeamId',''))
     rela_student = Student.objects.get(Id = request.POST.get('StudentId',''))
@@ -871,6 +915,7 @@ def team_details_response(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+@csrf_exempt
 def team_enroll_response(request):
     rela_course = Course.objects.get(No = request.POST.get('CourseId',''))
     rela_team = Team.objects.get(No = request.POST.get('TeamId',''))

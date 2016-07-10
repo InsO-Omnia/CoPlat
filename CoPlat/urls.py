@@ -51,9 +51,7 @@ urlpatterns = [
 
     ### requests from teacher.
     url(r'^teacher_courselist_response', views.teacher_courselist_response, name='teacher_courselist_response'),
-    url(r'^teacher_coursedetails_response', views.teacher_coursedetails_response,
-        name='teacher_coursedetails_response'),
-    
+    url(r'^teacher_coursedetails_response', views.teacher_coursedetails_response, name='teacher_coursedetails_response'),
     url(r'^coursework_studentlist_response', views.coursework_studentlist_response,name='coursework_studentlist_response'),
     url(r'^particular_courseworkpath_response', views.particular_courseworkpath_response,name='particular_courseworkpath_response'),
     url(r'^add_coursework_response', views.add_coursework_response, name='add_coursework_response'),
