@@ -11,8 +11,20 @@
 	<script>
 		$(document).ready(teacherReady);
 		window.onload = function(){
-			var text = window.opener.document.getElementById('courseid').innerHTML;
-			alert(text);
+			var courseid = getValue(location.search);
+			document.getElementById('tabletitle').innerHTML = '<h4>课程' + courseid + '学生名单</h4>';
+			var sl = $('#studentlist');
+			var url = '/CoPlat/course_studentlist_response/';
+			$.post(url, {CourseId: courseid}).success(function(data){
+				var json = data;
+				var length = json.Students.length;
+				var str = '';
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td>' + json.Students[i].StudentId + '</td><td>' + json.Students[i].StudentName + '</td></tr>';
+				}
+				sl.empty();
+				sl.append(str);
+			});
 		};
 	</script>
 </head>
@@ -33,7 +45,24 @@
 	<div class="row">
 		<div class="col-md-12">
 			<div id="maincontainer">
+				<div class="row">
+					<div class="col-md-offset-4 col-md-4">
+						<div class="form-group" style="text-align: center">
+							<div id="tabletitle"></div>
+						</div>
+						<table class="table">
+							<thead>
+							<tr>
+								<th style="text-align: center">学生ID</th>
+								<th style="text-align: center">学生姓名</th>
+							</tr>
+							</thead>
+							<tbody id="studentlist" style="text-align: center">
 
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

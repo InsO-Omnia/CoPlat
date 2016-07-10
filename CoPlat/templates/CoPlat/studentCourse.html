@@ -16,7 +16,7 @@
 			var studentid = getCookie('studentid');
 			var url = '/CoPlat/student_courselist_response/';
 			$.post(url, {StudentId: studentid}).success(function(data){
-        var json = eval('(' + data + ')');
+				var json = eval('(' + data + ')');
 				var str = '';
 				var length = json.courses.length;
 				for(var i = 0 ; i < length ; i++){
@@ -78,6 +78,7 @@
 			document.getElementById('displayresource').style.display = 'block';
 		}
 		function displayResourceList(){
+			//获取资源列表
 			var si = document.getElementById('resourcetype').selectedIndex;
 			var type = document.getElementById('resourcetype').options[si].value;
 			if(si == 0){
@@ -88,21 +89,14 @@
 			var str = '';
 			var url = '/CoPlat/resourcelist_load_response/';
 			$.post(url, {CourseId: courseid, Type: type}).success(function(data){
-        alert(data);
-        var json = data;
+				var json = eval('(' + data + ')');
 				var length = json.Resource.length;
 				for(var i = 0 ; i < length ; i++){
-					str = str + '<li>' + '<a href="" id="'  + json.Resource[i].ResourceId + '" onclick="downloadResource(\'' + json.Resource[i].ResourceId +  '\')">' + json.Resource[i].ResourceDes + '</a>' + '</li>';
+					str = str + '<li>' + '<a href="' + json.Resource[i].ResourcePath + '" id="' + json.Resource[i].ResourceId + '\')">' + json.Resource[i].ResourceDes + '</a>' + '</li>';
 				}
 				sl.empty();
 				sl.append(str);
-				for(var j = 0 ; j < length ; j++) {
-					var path = json.Resource[j].ResourcePath;
-					$('#' + json.Resource[j].ResourceId).attr('href', path);
-					//document.getElementById(json.Resource[j].ResourceId).href = '\"' + downloadResource(json.Resource[j].ResourceId) + '\"';
-				}
 			});
-
 		}
 		function studentHomework(){
 			//获取该门课程的作业列表
@@ -131,38 +125,76 @@
 			//获取作业详情
 			document.getElementById('filetype').selectedIndex = 0;
 			$('#uploadhomework').val('');
+			$('#texthomeworkcontent').val('');
 			document.getElementById('uploadstatus').innerHTML = '';
 			document.getElementById('displayhomeworkdetail').style.display = 'block';
 			document.getElementById('homeworkid').innerHTML = homeworkid;
-			var url = '/CoPlat/get_workInformation/';
-			$.post(url, {HomeworkId:homeworkid}).success(function(data){
-				var json = data;
-				document.getElementById('hdescription').innerHTML = '作业描述：' + json['Description'];
-				document.getElementById('hstarttime').innerHTML = '开始时间：' + json['StartTime'];
-				document.getElementById('hendtime').innerHTML = '结束时间：' + json['EndTime'];
-			});
-		}
+      var studentid = getCookie('studentid');
+			var hc = $('#homeworkcontent');
+			hc.empty();
+			var str = '';
+			                      var url = '/CoPlat/get_workInformation/';
+      $.post(url, {StudentId:studentid, HomeworkId:homeworkid}).success(function(data){
+      var json = eval('(' + data + ')');
+      document.getElementById('hdescription').innerHTML = '作业描述：' + json['Description'];
+      if(json['HomeworkType'] == 'Person'){
+         document.getElementById('homeworktype').innerHTML = '作业类型：' + '个人作业';
+      }
+      else if(json['HomeworkType'] == 'Team'){
+         document.getElementById('homeworktype').innerHTML = '作业类型：' + '团队作业';
+      }
+      document.getElementById('hstarttime').innerHTML = '开始时间：' + json['StartTime'];
+      document.getElementById('hendtime').innerHTML = '结束时间：' + json['EndTime'];
+      if(json['TextHomework'] == '' && json['FileHomeworkPath'] == ''){
+         document.getElementById('submitstatus').innerHTML = '还未提交过作业';
+      }
+      if(json['Score'] != ''){
+         str = str + '<li>作业评分：' + json['Score'] != '' + '</li>'
+      }
+      if(json['Comment'] != ''){
+         str = str + '<li>作业评价：' + json['Comment'] != '' + '</li>'
+      }
+      if(json['TextHomework'] != ''){
+         document.getElementById('submitstatus').innerHTML = '已提交过作业';
+         str = str + '<li>' + '已提交的作业文本:<br><p>' + json['TextHomework'] + '</p ></li>';
+      }
+      if(json['FileHomeworkPath'] != ''){
+         document.getElementById('submitstatus').innerHTML = '已提交过作业';
+         str = str + '<li>' + '<a href="' + json['FileHomeworkPath'] + '">点此下载提交过的文件</a >' + '</li>';
+      }
+      hc.append(str);
+   });
+	}
 		function uploadFile(){
 			var si = document.getElementById('filetype').selectedIndex;
 			var filetype = document.getElementById('filetype').options[si].value;
-			var fileObj = document.getElementById('uploadhomework').files[0];
-			if(!checkFileType(filetype, getFileFormat(fileObj.name))){
-				alert('文件格式不符，请重新选择！');
+			var uh = document.getElementById('uploadhomework');
+			var fileObj = uh.files[0];
+			var thc = $('#texthomeworkcontent');
+			var texthomeworkcontent = thc.val();
+			if(fileObj == undefined && texthomeworkcontent == ''){
+				alert('请输入作业或选择文件！');
 				return;
 			}
-
 			var fileController = '/CoPlat/coursework_upload_response/';
-
 			var homeworkid = document.getElementById('homeworkid').innerHTML;
 			var studentid = getCookie('studentid');
-			var filename = fileObj.name;
-
 			var form = new FormData();
+
+			if(fileObj != undefined){
+				if(!checkFileType(filetype, getFileFormat(fileObj.name))){
+					alert('文件格式不符，请重新选择！');
+					return;
+				}
+				var filename = fileObj.name;
+				form.append("FileName", filename);
+				form.append("File", fileObj);
+				form.append("Type", filetype);
+			}
 			form.append("HomeworkId", homeworkid);
 			form.append("StudentId", studentid);
-			form.append("FileName", filename);
-			form.append("Type", filetype);
-			form.append("File", fileObj);
+			form.append("TextHomework", texthomeworkcontent);
+
 
 			form.enctype = 'multipart/form-data';
 
@@ -170,21 +202,20 @@
 			xhr.open("post", fileController, true);
 			xhr.onreadystatechange = function () {
 				if(xhr.readyState == 4 && xhr.status == 200){
-				  var data = eval('(' + xhr.responseText + ')');
+					var data = eval('(' + xhr.responseText + ')');
 					var json = eval('(' + data + ')');
 					if(json['Status'] == 'Success'){
-						document.getElementById('uploadstatus').innerHTML = '<span style="color: green">文件上传成功！</span>';
+						document.getElementById('uploadstatus').innerHTML = '<span style="color: green">作业提交成功！</span>';
 					}
 					else if(json['Status'] == 'Repeat'){
 						document.getElementById('uploadstatus').innerHTML = '<span style="color: red">上传失败！文件已存在。</span>';
 					}
 					else if(json['Status'] == 'Fail'){
-						document.getElementById('uploadstatus').innerHTML = '<span style="color: red">文件上传失败。</span>';
+						document.getElementById('uploadstatus').innerHTML = '<span style="color: red">作业提交失败。</span>';
 					}
 				}
 			};
 			xhr.send(form);
-
 		}
 
 	</script>
@@ -220,7 +251,7 @@
 			</div>
 			<div class="col-md-2">
 				<div class="item">
-					<a href="./studentInformation.html" target="_self">管理个人信息</a>
+					<a href="/CoPlat/studentInformation_load/" target="_self">管理个人信息</a>
 				</div>
 			</div>
 		</div>
@@ -298,10 +329,16 @@
 								<li id="hdescription"></li>
 								<li id="hstarttime"></li>
 								<li id="hendtime"></li>
+								<li id="submitstatus"></li>
+							</ul>
+							<ul id="homeworkcontent">
+
 							</ul>
 							<div class="form-group">
 								<div class="form-group">
-									<p>上传作业：</p>
+									<p>提交作业：</p>
+									<label for="texthomeworkcontent">要提交的作业文本：</label>
+									<textarea class="form-control" rows="3" id="texthomeworkcontent"></textarea>
 									<label for="filetype">选择要上传的文件类型：</label>
 									<select id="filetype" class="form-control">
 										<option value="documentation">文档[.doc/.docx/.pdf]</option>

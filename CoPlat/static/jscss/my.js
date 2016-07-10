@@ -170,4 +170,14 @@ function checkDate(st, et, weeks){
 	else{
 		return false;
 	}
+
+
+}
+
+function getValue(search){
+	search = decodeURI(search);
+	var esindex = search.indexOf('=');
+	var length = search.length;
+	var result = search.substr(esindex + 1, length);
+	return result;
 }

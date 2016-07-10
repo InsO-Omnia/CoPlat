@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 # Create your models here.
 
 #######################################################################
@@ -46,6 +47,10 @@ class Student(models.Model):
     Id = models.CharField(max_length = 50,  primary_key = True)
     def __str__(self):
         return self.Id
+    def get_student_info(self):
+        res = str ("{ \"StudentId\" : \"" + self.Id + "\"," + "\"StudentName\" :\"" + self.user.first_name + ' ' + self.user.last_name  + "\"}")
+        return res
+
 #######################################################################
 # Other entities models
 #######################################################################
@@ -70,6 +75,7 @@ class Course(models.Model):
     Start_Date = models.DateField()
     End_Date = models.DateField()
     Duration = models.PositiveIntegerField()
+    Team_Admittance = models.BooleanField(default = False)
     Enrolled_Students = models.ManyToManyField(Student, through = 'Enrollment')
     Course_Instructors = models.ManyToManyField(Teacher, through = 'Instruction')
     semester = models.ForeignKey(Semester, on_delete = models.CASCADE)
@@ -80,13 +86,42 @@ class Course(models.Model):
         res = str ("{ \"CourseId\" : \"" + self.No + "\"," + "\"CourseName\" :\"" + self.Title + "\"}")
         return res
 
+class Team(models.Model):
+     No = models.CharField(max_length = 128)
+     Name = models.CharField(max_length = 500)
+     Description = models.CharField(max_length = 2000)
+     Capacity = models.IntegerField(default = 1)
+     Limit = models.IntegerField()
+     Readily_Builded = models.BooleanField(default = False)
+     #Choice for Response_Status
+     RE = 'rejected'
+     WA = 'waiting'
+     AD = 'admitted'
+     Status_Choice = {
+        (RE, 'REJECTED'),
+        (WA, 'WAITING'),
+        (AD, 'ADMITTED'),
+     }
+     Admittance_Status = models.CharField(max_length = 20, choices = Status_Choice, default = WA,)
+     Leader = models.ForeignKey(Student, on_delete = models.CASCADE, related_name = 'Owningteams_set')
+     course = models.ForeignKey(Course, on_delete = models.CASCADE)
+     Members = models.ManyToManyField(Student, through='Membership')
+     Candidates = models.ManyToManyField(Student, through='Team_Application', related_name = 'applications_set')
+     def __str__(self):
+        return self.No
+     def get_team_info(self):
+        res = str ("{ \"TeamId\" : \"" + self.No + "\"," + "\"TeamName\" :\"" + self.Name + "\"}")
+        return res
+
 class Coursework(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
+    Title = models.CharField(max_length = 200)
     Description = models.CharField(max_length = 2000)
     Start_Time = models.DateTimeField()
     End_Time  = models.DateTimeField()
-    #Is_Teamwork = models.BooleanField()
+    Is_Teamwork = models.BooleanField(default = False)
     Enrolled_Students = models.ManyToManyField(Student, through = 'Assignment')
+    Enrolled_Teams = models.ManyToManyField(Team, through = 'Team_Assignment')
     course = models.ForeignKey(Course, on_delete = models.CASCADE)
     def __str__(self):
         return self.No
@@ -113,14 +148,9 @@ class Resource(models.Model):
     }
     Category = models.CharField(max_length = 20, choices = Category_Choice, default = UN,)
     course = models.ForeignKey(Course, on_delete = models.CASCADE)
-    
 
 
 
-# class Team(models.Model):
-#     No = models.CharField(max_length = 128)
-#     Name = models.CharField(max_length = 500)
-#     Members = models.ManyToManyField(Student, through='Membership')
 
 #####################################################################
 # Many-to-many Relationship models, including:
@@ -130,16 +160,24 @@ class Resource(models.Model):
 #####################################################################
 
 class Enrollment(models.Model):
-    No = models.CharField(max_length = 50, primary_key = True) 
+    No = models.CharField(max_length = 50, primary_key = True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    
+
+class Team_Enrollment(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
 class Instruction(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+class Membership(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
+    Student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    Team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
 class Assignment(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
@@ -148,9 +186,38 @@ class Assignment(models.Model):
     Title = models.CharField(max_length = 200)
     Content = models.CharField(max_length=2000)
     Attachment = models.FileField(upload_to = 'Coursework')
-    Score = models.IntegerField()
+    Score = models.IntegerField(blank = True)
     Comment = models.CharField(max_length=2000)
 
-# class Membership(models.Model):
-#     Student = models.ForeignKey(Student, on_delete=models.CASCADE)
-#     Team = models.ForeignKey(Team, on_delete=models.CASCADE)
+class Team_Assignment(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    coursework = models.ForeignKey(Coursework, on_delete=models.CASCADE)
+    Title = models.CharField(max_length = 200)
+    Content = models.CharField(max_length=2000)
+    Attachment = models.FileField(upload_to = 'Coursework')
+    Score = models.IntegerField(blank = True)
+    Comment = models.CharField(max_length=2000)
+
+class Team_Application(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    Request_Info = models.CharField(max_length = 2000)
+    #Choice for Response_Status
+    RE = 'rejected'
+    WA = 'waiting'
+    AD = 'admitted'
+    Status_Choice = {
+        (RE, 'REJECTED'),
+        (WA, 'WAITING'),
+        (AD, 'ADMITTED'),
+    }
+    Response_Status = models.CharField(max_length = 20, choices = Status_Choice, default = WA,)
+
+class Message(models.Model):
+     sender = models.ForeignKey(User, related_name='has_chats')
+     content = models.TextField()
+     time = models.DateTimeField(auto_now_add = True)
+     def __unicode__(self):
+         return u'%s' % self.content

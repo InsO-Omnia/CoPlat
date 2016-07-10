@@ -12,17 +12,17 @@
 		$(document).ready(adminReady);
 		function look(){
 			//获得课程列表
+			$('#coursedetail').empty();
 			document.getElementById('createcourse').style.display = 'none';
 			document.getElementById('lookcourse').style.display = 'block';
 			var courselist = $('#courselist');
-			{#var url = 'http://127.0.0.1/DemoWebApp/tpcourselist.php';#}
-            var url = '/CoPlat/admin_courselist_response/';
+			var url = '/CoPlat/admin_courselist_response/';
 			$.post(url).success(function(data){
-				var json =data;
+				var json = data;
 				var str = '';
 				var length = json.courses.length;
 				for(var i = 0 ; i < length ; i++){
-					str = str + '<li>' + '<button class="btn btn-link" onclick="displayCourseDetail(\'' + json.courses[i]['CourseId'] + '\')">' + json.courses[i]['CourseName'] + '</button>' +'</li>';
+					str = str + '<tr><td>' + '<button class="btn btn-link" onclick="displayCourseDetail(\'' + json.courses[i].CourseId + '\')">' + json.courses[i].CourseName + '</button>' +'</td></tr>';
 				}
 				courselist.empty();
 				courselist.append(str);
@@ -34,18 +34,23 @@
 		}
 		function createCourse(){
 			//建立新课程
-			var cname = $('#cname').val();
-			var teacherid = '';
-			var ccredit = $('#ccredit').val();
-			var cweeks = $('#cweeks').val();
-			var csdate = $('#csdate').val();
-			var cedate= $('#cedate').val();
+			var cn = $('#cname');
+			var cname = cn.val();
+			var cc = $('#ccredit');
+			var ccredit = cc.val();
+			var cw = $('#cweeks');
+			var cweeks = cw.val();
+			var csd = $('#csdate');
+			var csdate = csd.val();
+			var ced = $('#cedate');
+			var cedate= ced.val();
 			if(cname == '' || ccredit == '' || cweeks == '' || csdate == '' || cedate == ''){
 				alert('请填写完整相关信息！');
 				return;
 			}
 			if(!checkDate(csdate, cedate, cweeks)){
-				alert('相关信息填写有误(起始日期与周数不同)，请检查！');
+				alert('相关信息填写有误(起始日期与周数矛盾)，请检查！');
+				return;
 			}
 			var url = '/CoPlat/create_new_course/';
 			$.post(url, {Name: cname, Credit: ccredit, Weeks: cweeks, StartDate : csdate, EndDate: cedate}).success(function(data){
@@ -57,17 +62,15 @@
 					alert('课程添加失败!请检查相关信息填写是否正确或稍候再试。');
 				}
 			});
-			cname.val('');
-			ccredit.val('');
-			cweeks.val('');
-			csdate.val('');
-			cedate.val('');
+			cn.val('');
+			cc.val('');
+			cw.val('');
+			csd.val('');
+			ced.val('');
 		}
-
 		function displayCourseDetail(courseid){
 			//显示课程详细信息
 			var url = '/CoPlat/get_course_details/';
-			{#var url = 'http://127.0.0.1/DemoWebApp/tpcoursedetail.php';#}
 			var cd = $('#coursedetail');
 			$.post(url, {CourseId: courseid}).success(function(data){
 				var json = data;
@@ -75,39 +78,91 @@
 				var credit = json['Credit'];
 				var weeks = json['Weeks'];
 				var str = '';
-				str = str + '<li>' + '课程名称：' + coursename + '</li>';
-				str = str + '<li>' + '任课教师：' + '</li>';
+				str = str + '<tr><td>' + '<span style="font-weight: bold;">课程名称：</span>' + coursename + '</td></tr>';
+				str = str + '<tr><td>' + '<span style="font-weight: bold;">任课教师：</span>' + '</td></tr>';
 				var length = json.Teacher.length;
 				for(var i = 0 ; i < length ; i++){
-					str = str + '<li>' + json.Teacher[i].TeacherId + ' ' + json.Teacher[i].TeacherName + '</li>';
+					str = str + '<tr><td style="text-indent: 2rem">' + json.Teacher[i].TeacherId + ' ' + json.Teacher[i].TeacherName + '</td></tr>';
 				}
-				str = str + '<li>' + '课程学分：' + credit + '</li>';
-				str = str + '<li>' + '课程周数：' + weeks + '</li>';
-				str = str + '<li>' + '<div class="form-group">' +
-						'<p><label for="studentid">需要添加至本课程的学生学号</label></p>' +
-						'<p><input id="studentid" type="text" placeholder="输入学生学号"></p>' +
-						'<button onclick="addStudent(\'' + courseid + '\')">添加</button>' +
-						'</div>' + '</li>';
+				str = str + '<tr><td>' + '<div class="form-group" style="margin: 0">' +
+										 	'<div class="input-group">' +
+												'<input class="form-control" id="addteacherid" type="text" placeholder="输入教师ID">' +
+												'<div class="input-group-addon"><button class="btn btn-default btn-xs" onclick="addTeacher(\'' + courseid + '\')">添加教师</button></div>' +
+											'</div>' +
+										'</div>' +
+							'</td></tr>';
+				str = str + '<tr><td>' + '<span style="font-weight: bold;">课程学分：</span>' + credit + '</td></tr>';
+				str = str + '<tr><td>' + '<span style="font-weight: bold;">课程周数：</span>' + weeks + '</td></tr>';
+				str = str + '<tr><td>' +
+									'<div class="form-group" style="margin: 0">' +
+										'<label>输入要添加的学生ID</label>' +
+										'<div class="input-group">' +
+											'<input class="form-control" id="addstudentid" type="text" placeholder="输入学生ID">' +
+											'<div class="input-group-addon"><button class="btn btn-default btn-xs" onclick="addStudent(\'' + courseid + '\')">添加学生</button></div>' +
+										'</div>' +
+									'</div>' +
+						'</td></tr>';
+				str = str + '<tr><td>' + '<button class="btn btn-link" onclick="closeCourse(\'' + courseid + '\')">关闭课程</button>' + '</td></tr>';
 				cd.empty();
 				cd.append(str);
 			});
 		}
-		function addStudent(courseid){
+		function addStudent(courseid) {
 			//向某课程添加学生
-			var studentid = $('#studentid').val();
-			if(studentid == ''){
-				alert('请填写学生学号！');
+			var asi = $('#addstudentid');
+			var studentid = asi.val();
+			if (studentid == '') {
+				alert('请输入学生ID！');
 				return;
 			}
 			var url = '/CoPlat/allocate_students_to_course/';
-			$.post(url,{CourseId: courseid, Studentid: studentid}).success(function(data){
-{#				var json = eval('(' + data + ')');#}
-                var json = data;
+			$.post(url, {CourseId: courseid, StudentId: studentid}).success(function (data) {
+				var json = data;
+				if (json['Status'] == 'Success') {
+					alert('添加成功！')
+				}
+				else if (json['Status'] == 'Fail') {
+					alert('添加失败！')
+				}
+				else if (json['Status'] == 'Repeat') {
+					alert('学生不存在或者重复添加！')
+				}
+			});
+			asi.val('');
+		}
+		function addTeacher(courseid){
+			//向某课程添加教师
+			var ati = $('#addteacherid');
+			var teacherid = ati.val();
+			if(teacherid == ''){
+				alert('请输入教师ID！');
+				return;
+			}
+			var url = '/CoPlat/allocate_teachers_to_course/';
+			$.post(url, {CourseId : courseid, TeacherId : teacherid}).success(function(data){
+				var json = data;
 				if(json['Status'] == 'Success'){
-					alert('添加学生成功！');
+					alert('添加成功！')
 				}
 				else if(json['Status'] == 'Fail'){
-					alert('添加学生失败！请检查信息填写或稍候再试。');
+					alert('添加失败！')
+				}
+				else if(json['Status'] == 'Repeat'){
+					alert('教师不存在或者重复添加！')
+				}
+			});
+			ati.val('');
+		}
+		function closeCourse(courseid){
+			//关闭课程
+			var url = '';
+			$.post(url, {CourseId : courseid}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('课程已成功关闭！')
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('课程关闭失败！')
 				}
 			});
 		}
@@ -161,11 +216,25 @@
 			<div id="maincontainerR">
 				<div id="lookcourse" style="display: none">
 					<div class="row">
-						<div class="col-md-3">
-							<ul id="courselist"></ul>
+						<div class="col-md-2">
+							<div id="courselistcontainer">
+								<table class="table table-condensed">
+									<thead><tr><td></td></tr></thead>
+									<tbody id="courselist" style="text-align: center">
+
+									</tbody>
+								</table>
+							</div>
 						</div>
-						<div class="col-md-9">
-							<ul id="coursedetail"></ul>
+						<div class="col-md-4">
+							<div id="coursedetailcontainer">
+								<table class="table">
+									<thead><tr><td></td></tr></thead>
+									<tbody id="coursedetail">
+
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -203,12 +272,11 @@
 								</div>
 							</div>
 							<div class="form-group">
-								<button class="btn btn-default" onclick="createCourse()">提交<tton>
+								<button class="btn btn-default" onclick="createCourse()">提交</button>
 							</div>
 						</div>
 					</div>
 				</div>
-
 			</div>
 		</div>
 	</div>
