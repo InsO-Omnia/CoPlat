@@ -10,39 +10,30 @@
 	<link rel="stylesheet" href="../../static/jscss/style.css">
 	<script>
 		function login(){
+			//管理员登录
 			var id = $("#id").val();
 			var password = $("#password").val();
-			var identity = '';
-			var radio = document.getElementsByName('identity');
-			for(var i = 0 ; i < radio.length ; i++){
-				if(radio[i].checked){
-					identity = radio[i].value;
-				}
-			}
+			var identity = 'administrator';
 			if(id == ''){
-				alert('请输入学号/教工号');
+				alert('请输入管理员编号');
 				return;
 			}
 			else if(password == ''){
 				alert('请输入密码');
 				return;
 			}
-			else if(identity == ''){
-				alert('请选择登录身份');
-				return;
-			}
 			var url = '/CoPlat/login_verify/';
 			$.post(url, {Id: id , Password: password , Identity : identity}).success(function(data){
 				var json = eval('(' + data + ')');
+				/*
+				 * 返回如下形式json:(成功返回Success，失败返回Fail)
+				 * {
+				 * 	"Status":"Success"
+				 * }
+				 * */
 				if(json['Status'] == 'Success'){
-					if(identity == 'student'){
-						setCookie('studentid', id, 0.04);
-						window.location.href = '/CoPlat/student_load/';
-					}
-					else if(identity == 'teacher'){
-						setCookie('teacherid', id, 0.04);
-						window.location.href = '/CoPlat/teacher_load/';
-					}
+					setCookie('adminid', id, 0.04);
+					window.location.href = '/CoPlat/administrator_load/';
 				}else if(json['Status'] == 'Fail'){
 					alert('登录失败！请检查登录信息填写是否正确！')
 				}
@@ -74,9 +65,9 @@
 <body>
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-md-5">
+		<div class="col-md-7">
 			<div id="title">
-				在线协同教学系统
+				在线协同教学系统-<span style="color: red;font-weight: bold">管理员登录</span>
 			</div>
 		</div>
 	</div>
@@ -90,28 +81,16 @@
 			<div class="col-md-5">
 				<div id="login">
 					<div class="form-group">
-						<label for="id">学号/教工号</label>
-						<input type="text" class="form-control" id="id" placeholder="请输入学号/教工号">
+						<label for="id">管理员编号</label>
+						<input type="text" class="form-control" id="id" placeholder="请输管理员编号">
 					</div>
 					<div class="form-group">
 						<label for="password">密码</label>
 						<input type="password" class="form-control" id="password" placeholder="请输入密码">
 					</div>
 					<div class="form-group">
-						<div class="radio-inline">
-							<label>
-								<input type="radio" name="identity" value="student" id="student">
-								学生
-							</label>
-						</div>
-						<div class="radio-inline">
-							<label>
-								<input type="radio" name="identity" value="teacher" id="teacher">
-								教师
-							</label>
-						</div>
+						<button class="btn btn-default" onclick="login()" >登录</button>
 					</div>
-					<button class="btn btn-default" onclick="login()" >登录</button>
 				</div>
 			</div>
 		</div>

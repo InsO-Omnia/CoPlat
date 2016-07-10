@@ -9,7 +9,11 @@
 	<link rel="stylesheet" href="../../static/jscss/style.css">
 	<script src="../../static/jscss/my.js"></script>
 	<script>
-		$(document).ready(studentReady);
+		$(document).ready(teacherReady);
+		window.onload = function(){
+			var text = window.opener.document.getElementById('courseid').innerHTML;
+			alert(text);
+		};
 	</script>
 </head>
 <body>
@@ -26,22 +30,10 @@
 			</div>
 		</div>
 	</div>
-	<div id="nav">
-		<div class="row">
-			<div class="col-md-2">
-				<div class="item">
-					<a href="/CoPlat/student_course_load/" target="_self">查看课程</a>
-				</div>
-			</div>
-			<div class="col-md-2">
-				<div class="item">
-					<a href="" target="_self">组建队伍(暂不可用)</a>
-				</div>
-			</div>
-			<div class="col-md-2">
-				<div class="item">
-					<a href="./studentInformation.html" target="_self">管理个人信息</a>
-				</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div id="maincontainer">
+
 			</div>
 		</div>
 	</div>

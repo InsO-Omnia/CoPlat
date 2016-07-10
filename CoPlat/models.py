@@ -31,15 +31,21 @@ from django.contrib.auth.models import User
 class Admin(models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
     Id = models.CharField(max_length = 50, primary_key = True)
+    def __str__(self):              # __unicode__ on Python 2
+        return self.user.first_name + self.user.last_name 
+
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
     Id = models.CharField(max_length = 50,  primary_key = True)
+    def __str__(self):
+        return self.Id
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     Id = models.CharField(max_length = 50,  primary_key = True)
-
+    def __str__(self):
+        return self.Id
 #######################################################################
 # Other entities models
 #######################################################################
@@ -67,6 +73,12 @@ class Course(models.Model):
     Enrolled_Students = models.ManyToManyField(Student, through = 'Enrollment')
     Course_Instructors = models.ManyToManyField(Teacher, through = 'Instruction')
     semester = models.ForeignKey(Semester, on_delete = models.CASCADE)
+    def __str__(self):
+        return self.No
+
+    def get_course_info(self):
+        res = str ("{ \"CourseId\" : \"" + self.No + "\"," + "\"CourseName\" :\"" + self.Title + "\"}")
+        return res
 
 class Coursework(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
@@ -76,9 +88,16 @@ class Coursework(models.Model):
     #Is_Teamwork = models.BooleanField()
     Enrolled_Students = models.ManyToManyField(Student, through = 'Assignment')
     course = models.ForeignKey(Course, on_delete = models.CASCADE)
+    def __str__(self):
+        return self.No
+
+    def get_coursework_info(self):
+        res = str ("{ \"CourseId\" : \"" + self.No + "\"," + "\"CourseName\" :\"" + self.Title + "\"}")
+        return res
 
 class Resource(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
+    Title = models.CharField(max_length = 200)
     Description = models.CharField(max_length = 2000)
     Attachment = models.FileField(upload_to = 'Resource')
     #Choice for category
@@ -94,6 +113,8 @@ class Resource(models.Model):
     }
     Category = models.CharField(max_length = 20, choices = Category_Choice, default = UN,)
     course = models.ForeignKey(Course, on_delete = models.CASCADE)
+    
+
 
 
 # class Team(models.Model):
@@ -109,16 +130,22 @@ class Resource(models.Model):
 #####################################################################
 
 class Enrollment(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True) 
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    
 
 class Instruction(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+
 class Assignment(models.Model):
+    No = models.CharField(max_length = 50, primary_key = True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     coursework = models.ForeignKey(Coursework, on_delete=models.CASCADE)
+    Title = models.CharField(max_length = 200)
     Content = models.CharField(max_length=2000)
     Attachment = models.FileField(upload_to = 'Coursework')
     Score = models.IntegerField()

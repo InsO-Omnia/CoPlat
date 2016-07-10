@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统-管理员</title>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
+	<script>
+		$(document).ready(adminReady);
+		function look(){
+			//获得课程列表
+			document.getElementById('createcourse').style.display = 'none';
+			document.getElementById('lookcourse').style.display = 'block';
+			var courselist = $('#courselist');
+			{#var url = 'http://127.0.0.1/DemoWebApp/tpcourselist.php';#}
+            var url = '/CoPlat/admin_courselist_response/';
+			$.post(url).success(function(data){
+				var json =data;
+				var str = '';
+				var length = json.courses.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<li>' + '<button class="btn btn-link" onclick="displayCourseDetail(\'' + json.courses[i]['CourseId'] + '\')">' + json.courses[i]['CourseName'] + '</button>' +'</li>';
+				}
+				courselist.empty();
+				courselist.append(str);
+			});
+		}
+		function create(){
+			document.getElementById('lookcourse').style.display = 'none';
+			document.getElementById('createcourse').style.display = 'block';
+		}
+		function createCourse(){
+			//建立新课程
+			var cname = $('#cname').val();
+			var teacherid = '';
+			var ccredit = $('#ccredit').val();
+			var cweeks = $('#cweeks').val();
+			var csdate = $('#csdate').val();
+			var cedate= $('#cedate').val();
+			if(cname == '' || ccredit == '' || cweeks == '' || csdate == '' || cedate == ''){
+				alert('请填写完整相关信息！');
+				return;
+			}
+			if(!checkDate(csdate, cedate, cweeks)){
+				alert('相关信息填写有误(起始日期与周数不同)，请检查！');
+			}
+			var url = '/CoPlat/create_new_course/';
+			$.post(url, {Name: cname, Credit: ccredit, Weeks: cweeks, StartDate : csdate, EndDate: cedate}).success(function(data){
+				var json = data;
+				if(json['Status'] == 'Success'){
+					alert('课程添加成功!');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('课程添加失败!请检查相关信息填写是否正确或稍候再试。');
+				}
+			});
+			cname.val('');
+			ccredit.val('');
+			cweeks.val('');
+			csdate.val('');
+			cedate.val('');
+		}
+
+		function displayCourseDetail(courseid){
+			//显示课程详细信息
+			var url = '/CoPlat/get_course_details/';
+			{#var url = 'http://127.0.0.1/DemoWebApp/tpcoursedetail.php';#}
+			var cd = $('#coursedetail');
+			$.post(url, {CourseId: courseid}).success(function(data){
+				var json = data;
+				var coursename = json['CourseName'];
+				var credit = json['Credit'];
+				var weeks = json['Weeks'];
+				var str = '';
+				str = str + '<li>' + '课程名称：' + coursename + '</li>';
+				str = str + '<li>' + '任课教师：' + '</li>';
+				var length = json.Teacher.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<li>' + json.Teacher[i].TeacherId + ' ' + json.Teacher[i].TeacherName + '</li>';
+				}
+				str = str + '<li>' + '课程学分：' + credit + '</li>';
+				str = str + '<li>' + '课程周数：' + weeks + '</li>';
+				str = str + '<li>' + '<div class="form-group">' +
+						'<p><label for="studentid">需要添加至本课程的学生学号</label></p>' +
+						'<p><input id="studentid" type="text" placeholder="输入学生学号"></p>' +
+						'<button onclick="addStudent(\'' + courseid + '\')">添加</button>' +
+						'</div>' + '</li>';
+				cd.empty();
+				cd.append(str);
+			});
+		}
+		function addStudent(courseid){
+			//向某课程添加学生
+			var studentid = $('#studentid').val();
+			if(studentid == ''){
+				alert('请填写学生学号！');
+				return;
+			}
+			var url = '/CoPlat/allocate_students_to_course/';
+			$.post(url,{CourseId: courseid, Studentid: studentid}).success(function(data){
+{#				var json = eval('(' + data + ')');#}
+                var json = data;
+				if(json['Status'] == 'Success'){
+					alert('添加学生成功！');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('添加学生失败！请检查信息填写或稍候再试。');
+				}
+			});
+		}
+	</script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统-<span style="color: red;font-weight: bold">管理员</span>
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/adminSemester_load/" target="_self">学期管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="selecteditem">
+					<a href="/CoPlat/adminCourse_load/" target="_self">课程管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="" target="_self">用户信息管理(暂不可用)</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2">
+			<div id="maincontainerL">
+				<div class="form-group">
+					<button class="btn btn-default" onclick="look()">管理已有课程</button>
+				</div>
+				<div class="form-group">
+					<button class="btn btn-default" onclick="create()">建立新课程</button>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-10">
+			<div id="maincontainerR">
+				<div id="lookcourse" style="display: none">
+					<div class="row">
+						<div class="col-md-3">
+							<ul id="courselist"></ul>
+						</div>
+						<div class="col-md-9">
+							<ul id="coursedetail"></ul>
+						</div>
+					</div>
+				</div>
+				<div id="createcourse" style="display: none">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">课程名称</div>
+									<input class="form-control" id="cname" type="text" >
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">课程学分</div>
+									<input class="form-control" id="ccredit" type="text">
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">开始日期</div>
+									<input class="form-control" type="date" id="csdate">
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">结束日期</div>
+									<input class="form-control" type="date" id="cedate">
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">课程周数</div>
+									<input class="form-control" id="cweeks" type="text">
+								</div>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" onclick="createCourse()">提交<tton>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>
