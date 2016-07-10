@@ -65,5 +65,6 @@ urlpatterns = [
     url(r'^get_course_details',views.get_course_details,name='get_course_details'),
     url(r'^create_new_course',views.create_new_course,name='create_new_course'),
     url(r'^allocate_students_to_course',views.allocate_students_to_course,name='allocate_students_to_course'),
+    url(r'^allocate_teachers_to_course',views.allocate_teachers_to_course,name='allocate_teachers_to_course'),
 ]
 

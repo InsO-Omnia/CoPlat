@@ -128,7 +128,7 @@
 			}
 			var url = '/CoPlat/add_coursework_response/';
 			$.post(url, {CourseId: courseid, Description: description, StartTime: starttime, EndTime: endtime}).success(function(data){
-				                    var json = eval('(' + data + ')');
+                var json = data;
                            // alert(json);
 				if(json['Status'] == 'Success'){
 					alert('作业添加成功！');
@@ -160,7 +160,26 @@
 				hsl.append(str);
 			});
 		}
-		function displayedhomework(studentid){
+
+{#		function displayedhomework(studentid){#}
+{#			$('#comment').val('');#}
+{#			document.getElementById('displayedhomework').style.display = 'block';#}
+{#			document.getElementById('studentid').innerHTML = studentid;#}
+{#			var homeworkid = document.getElementById('homeworkid').innerHTML;#}
+{#			var url = '/CoPlat/particular_courseworkpath_response/';#}
+{#			var path = '';#}
+{#			$.post(url, {StudentId: studentid, HomeworkId: homeworkid}).success(function(data){#}
+{#				var json = data;#}
+{#				path = json['Path'];#}
+{#				$('#download').attr('href', path);#}
+{#			});#}
+{#		}#}
+
+        function displayedhomework(studentid){
+			//获取该学生的作业内容
+			document.getElementById('downloadguide').style.display = 'none';
+			document.getElementById('download').innerHTML = '';
+			document.getElementById('texthomework').innerHTML = '';
 			$('#comment').val('');
 			document.getElementById('displayedhomework').style.display = 'block';
 			document.getElementById('studentid').innerHTML = studentid;
@@ -170,9 +189,18 @@
 			$.post(url, {StudentId: studentid, HomeworkId: homeworkid}).success(function(data){
 				var json = data;
 				path = json['Path'];
-				$('#download').attr('href', path);
+				if(path != ''){
+					$('#download').attr('href', path);
+					document.getElementById('downloadguide').style.display = 'block';
+					document.getElementById('download').innerHTML = '下载文件';
+				}
+				var htext = json['TextHomework'];
+				if(htext != ''){
+					document.getElementById('texthomework').innerHTML = '<p>提交的作业文本：</p><p>' + htext;
+				}
 			});
 		}
+
 		function submitComment(){
 			//提交作业评论
 			var commenttext = $('#comment').val();
@@ -379,8 +407,11 @@
 							<label>当前学生学号：</label>
 							<label id="studentid"></label>
 							<div class="form-group">
-								<p>请右键点击下方链接选择“链接另存为”以下载文件。</p>
-								<a id="download" href="">下载作业</a>
+								<div id="texthomework"></div>
+							</div>
+							<div class="form-group">
+								<p id="downloadguide">该作业提交了文件，请右键点击下方链接选择“链接另存为”以下载文件。</p>
+								<a id="download" href=""></a>
 							</div>
 							<div class="row">
 								<div class="col-md-12">
@@ -399,7 +430,7 @@
 								<button class="btn btn-default" onclick="submitComment()">提交</button>
 							</div>
 						</div>
-					</div>
+                    </div>
 				</div>
 			</div>
 		</div>

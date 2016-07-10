@@ -4,6 +4,7 @@ from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime,timedelta
+import time
 from .models import *
 from django.core.exceptions import ObjectDoesNotExist
 import os
@@ -247,8 +248,10 @@ def resourcelist_load_response(request):
     if request.method == 'POST':
         rela_course = Course.objects.get(No = request.POST.get('CourseId','')) 
         resource_category = request.POST.get('Type','')
+        print(resource_category)
         resource_list = Resource.objects.filter(Category = resource_category)
-        response = "{\"Resource\" : [ "
+       
+        response = "{\"Resource\" : ["
         for element in resource_list:
             resource_des = element.Description
             if (resource_des == ''):
@@ -256,34 +259,107 @@ def resourcelist_load_response(request):
             resource_path = '/CoPlat/media/Resource/' + element.Title
             response = response + "{\"ResourceId\" : \"" + element.No + "\", \"ResourceDes\":\"" + resource_des + "\", \"ResourcePath\":\"" + resource_path +"\"},"
     response = response[0:-1] + "]}"
-    print(response)
+    response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
+
+# @csrf_exempt
+# def coursework_upload_response(request):
+#     if request.method == 'POST':
+#         student_id = request.POST.get('StudentId','')
+#         coursework_no = request.POST.get('HomeworkId','')
+#
+#         assign_no = student_id + '_' + coursework_no
+#         rela_coursework = Coursework.objects.get(No = coursework_no)
+#         upload_file = request.FILES.get('File','')
+#         result = "{Status : 'Fail'}"
+#         if upload_file:
+#             file_content = ContentFile(upload_file.read())
+#             file_type= upload_file.name.split(".")[-1]
+#             coursework_name = student_id + '_' +coursework_no + '.' + file_type
+#             try:
+#                 rela_assignment = Assignment.objects.get(No = assign_no)
+#             except ObjectDoesNotExist:
+#                 new_assignment = Assignment(No = assign_no, student = Student.objects.get(Id = student_id), coursework = Coursework.objects.get(No = coursework_no), Title = coursework_name, Score = 0)
+#                 new_assignment.Attachment.save(coursework_name, file_content)
+#                 new_assignment.save()
+#             else:
+#                 rela_assignment.Attachment.save(coursework_name, file_content)
+#             result = "{Status : 'Success'}"
+#
+#     response = json.dumps(result)
+#     return HttpResponse(response, content_type="application/json")
+
+
 
 @csrf_exempt
 def coursework_upload_response(request):
     if request.method == 'POST':
-        student_id = request.POST.get('StudentId','')
-        coursework_no = request.POST.get('HomeworkId','')
+        student_id = request.POST.get('StudentId', '')
+        coursework_no = request.POST.get('HomeworkId', '')
+        texthomework = request.POST.get('TextHomework','')
         assign_no = student_id + '_' + coursework_no
-        rela_coursework = Coursework.objects.get(No = coursework_no)
-        upload_file = request.FILES.get('File','')
+        rela_coursework = Coursework.objects.get(No=coursework_no)
+        upload_file = request.FILES.get('File', '')
+
         result = "{Status : 'Fail'}"
-        if upload_file:
+
+        # new_assignment = Assignment(No=assign_no, student=Student.objects.get(Id=student_id),coursework=Coursework.objects.get(No=coursework_no), Score=0)
+        #
+        # if texthomework
+        #     new_assignment.Content=texthomework
+
+
+        if upload_file and texthomework:
             file_content = ContentFile(upload_file.read())
-            file_type= upload_file.name.split(".")[-1]
-            coursework_name = student_id + '_' +coursework_no + '.' + file_type
+            file_type = upload_file.name.split(".")[-1]
+            coursework_name = student_id + '_' + coursework_no + '.' + file_type
             try:
-                rela_assignment = Assignment.objects.get(No = assign_no)
+                rela_assignment = Assignment.objects.get(No=assign_no)
             except ObjectDoesNotExist:
-                new_assignment = Assignment(No = assign_no, student = Student.objects.get(Id = student_id), coursework = Coursework.objects.get(No = coursework_no), Title = coursework_name, Score = 0)
+                new_assignment = Assignment(No=assign_no, student=Student.objects.get(Id=student_id),
+                                            coursework=Coursework.objects.get(No=coursework_no), Title=coursework_name,
+                                            Score=0,Content=texthomework)
                 new_assignment.Attachment.save(coursework_name, file_content)
                 new_assignment.save()
             else:
+                rela_assignment.Content = texthomework
                 rela_assignment.Attachment.save(coursework_name, file_content)
-            result = "{Status : 'Success'}"
+                rela_assignment.save()
+            result = {'Status': 'Success'}
+        elif texthomework and not upload_file:
+            try:
+                rela_assignment = Assignment.objects.get(No=assign_no)
+            except ObjectDoesNotExist:
+                new_assignment = Assignment(No=assign_no, student=Student.objects.get(Id=student_id),
+                                            coursework=Coursework.objects.get(No=coursework_no), Title=assign_no,
+                                            Score=0, Content=texthomework)
+
+                new_assignment.save()
+            else:
+                rela_assignment.Content=texthomework
+                rela_assignment.Attachment.delete()
+                rela_assignment.save()
+            result = {'Status' : 'Success'}
+
+        else:
+            file_content = ContentFile(upload_file.read())
+            file_type = upload_file.name.split(".")[-1]
+            coursework_name = student_id + '_' + coursework_no + '.' + file_type
+            try:
+                rela_assignment = Assignment.objects.get(No=assign_no)
+            except ObjectDoesNotExist:
+                new_assignment = Assignment(No=assign_no, student=Student.objects.get(Id=student_id),
+                                            coursework=Coursework.objects.get(No=coursework_no), Title=coursework_name,
+                                            Score=0)
+                new_assignment.Attachment.save(coursework_name, file_content)
+                new_assignment.save()
+            else:
+                rela_assignment.Content=''
+                rela_assignment.Attachment.save(coursework_name, file_content)
+            result = {'Status' : 'Success'}
+
     response = json.dumps(result)
     return HttpResponse(response, content_type="application/json")
-
 #######################################################################
 # Responses for requests from teachers.
 #######################################################################
@@ -340,12 +416,16 @@ def coursework_studentlist_response(request):
 
 @csrf_exempt
 def particular_courseworkpath_response(request):
+
     rela_student = Student.objects.get(Id = request.POST.get('StudentId',''))
     rela_coursework = Coursework.objects.get(No = request.POST.get('HomeworkId',''))
     rela_assign = Assignment.objects.get(No = rela_student.Id + '_' + rela_coursework.No)
-    path = '/CoPlat/media/Coursework/' + rela_assign.Title
-    
-    response = {'Path': path}
+    if rela_assign.Attachment == '':
+        path = ''
+    else:
+        path = '/CoPlat/media/Coursework/' + rela_assign.Title
+    hw = rela_assign.Content
+    response = {'Path': path,'TextHomework':hw}
     response = json.dumps(response)
     print(response)
     return HttpResponse(response, content_type="application/json")
@@ -360,7 +440,8 @@ def add_coursework_response(request):
     endtime = endtime + timedelta(hours=8)
     try:
         c = Course.objects.get(No=courseid)
-        cw = Coursework(No=courseid + '0' + str(Coursework.objects.count() + 1), Description=description, Start_Time=starttime, End_Time=endtime,course=c)
+        # cw = Coursework(No=courseid + '0' + str(Coursework.objects.count() + 1), Description=description, Start_Time=starttime, End_Time=endtime,course=c)
+        cw = Coursework(No=courseid + '-' + str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())), Description=description, Start_Time=starttime, End_Time=endtime,course=c)
         cw.save()
     except:
         response = {'Status': 'Fail'}
@@ -519,7 +600,7 @@ def get_course_details(request):
 @csrf_exempt
 def allocate_students_to_course(request):
     courseid = request.POST.get('CourseId', '')
-    studentid = request.POST.get('Studentid', '')
+    studentid = request.POST.get('StudentId', '')
     c = Course.objects.get(No=courseid)
     s = Student.objects.get(Id=studentid)
     try:
@@ -534,6 +615,24 @@ def allocate_students_to_course(request):
     response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
+
+@csrf_exempt
+def allocate_teachers_to_course(request):
+    courseid = request.POST.get('CourseId', '')
+    teacherid = request.POST.get('TeacherId', '')
+    c = Course.objects.get(No=courseid)
+    t = Teacher.objects.get(Id=teacherid)
+    try:
+        i = Instruction.objects.get(teacher=t,course=c)
+    except ObjectDoesNotExist:
+        i = Instruction(No = t.Id + '_' + c.No, teacher = t, course = c)
+        i.save()
+        response = {'Status' : 'Success'}
+    else:
+        response = {'Status' : 'Fail'}
+
+    response = json.dumps(response)
+    return HttpResponse(response, content_type="application/json")
 # @csrf_exempt
 # def get_student_courselist(request):
 #     id = request.POST.get('StudentId', '')
