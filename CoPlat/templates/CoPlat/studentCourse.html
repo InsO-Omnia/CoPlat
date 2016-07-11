@@ -55,7 +55,7 @@
 			var url = '/CoPlat/get_studentCourse_information/';
 			var cd = $('#coursedetail');
 			$.post(url, {CourseId: courseid}).success(function(data){
-				var json = data;
+				var json =  eval('(' + data + ')');
 				var coursename = json['CourseName'];
 				var credit = json['Credit'];
 				var weeks = json['Weeks'];
@@ -70,6 +70,7 @@
 				str = str + '<tr><td>' + '课程周数：' + weeks + '</td></tr>';
 				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="displayResource()">' + '下载资源</button>' + '</td></tr>';
 				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="studentHomework()">' + '管理作业</button>' + '</td></tr>';
+				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="toStudentComm(\'' + courseid + '\')">进入课程讨论区</button>' + '</td></tr>';
 				cd.empty();
 				cd.append(str);
 			});
@@ -113,9 +114,9 @@
 			$.post(url,{CourseId: courseid, StudentId: studentid}).success(function(data){
 				var json = eval('(' + data + ')');
 				var str = '<tr><td style="text-align: center"><p>作业列表</p></td></tr>';
-				var length = getJsonLength(json);
+				var length = json.Homeworks.length;
 				for(var i = 0 ; i < length ; i++){
-					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="homeworkDetail(\'' + json[i] + '\')">' + json[i] + '</button>' + '</td></tr>';
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="homeworkDetail(\'' + json.Homeworks[i].HomeworkId + '\')">' + json.Homeworks[i].HomeworkTitle + '</button>' + '</td></tr>';
 				}
 				hl.empty();
 				hl.append(str);
@@ -125,47 +126,46 @@
 			//获取作业详情
 			document.getElementById('filetype').selectedIndex = 0;
 			$('#uploadhomework').val('');
-			$('#texthomeworkcontent').val('');
+			                      $('#texthomeworkcontent').val('');
+                            var studentid = getCookie("studentid");
 			document.getElementById('uploadstatus').innerHTML = '';
 			document.getElementById('displayhomeworkdetail').style.display = 'block';
 			document.getElementById('homeworkid').innerHTML = homeworkid;
-<<<<<<< HEAD
-      var studentid = getCookie('studentid');
 			var hc = $('#homeworkcontent');
 			hc.empty();
 			var str = '';
 			var url = '/CoPlat/get_workInformation/';
-      $.post(url, {StudentId:studentid, HomeworkId:homeworkid}).success(function(data){
-      var json = eval('(' + data + ')');
-      document.getElementById('hdescription').innerHTML = '作业描述：' + json['Description'];
-      if(json['HomeworkType'] == 'Person'){
-         document.getElementById('homeworktype').innerHTML = '作业类型：' + '个人作业';
-      }
-      else if(json['HomeworkType'] == 'Team'){
-         document.getElementById('homeworktype').innerHTML = '作业类型：' + '团队作业';
-      }
-      document.getElementById('hstarttime').innerHTML = '开始时间：' + json['StartTime'];
-      document.getElementById('hendtime').innerHTML = '结束时间：' + json['EndTime'];
-      if(json['TextHomework'] == '' && json['FileHomeworkPath'] == ''){
-         document.getElementById('submitstatus').innerHTML = '还未提交过作业';
-      }
-      if(json['Score'] != ''){
-         str = str + '<li>作业评分：' + json['Score'] != '' + '</li>'
-      }
-      if(json['Comment'] != ''){
-         str = str + '<li>作业评价：' + json['Comment'] != '' + '</li>'
-      }
-      if(json['TextHomework'] != ''){
-         document.getElementById('submitstatus').innerHTML = '已提交过作业';
-         str = str + '<li>' + '已提交的作业文本:<br><p>' + json['TextHomework'] + '</p ></li>';
-      }
-      if(json['FileHomeworkPath'] != ''){
-         document.getElementById('submitstatus').innerHTML = '已提交过作业';
-         str = str + '<li>' + '<a href="' + json['FileHomeworkPath'] + '">点此下载提交过的文件</a >' + '</li>';
-      }
-      hc.append(str);
-   });
-	}
+			$.post(url, {StudentId: studentid, HomeworkId:homeworkid}).success(function(data){
+				var json = eval('(' + data + ')');
+				document.getElementById('hdescription').innerHTML = '作业描述：' + json['Description'];
+				if(json['HomeworkType'] == 'Person'){
+					document.getElementById('homeworktype').innerHTML = '作业类型：' + '个人作业';
+				}
+				else if(json['HomeworkType'] == 'Team'){
+					document.getElementById('homeworktype').innerHTML = '作业类型：' + '团队作业';
+				}
+				document.getElementById('hstarttime').innerHTML = '开始时间：' + json['StartTime'];
+				document.getElementById('hendtime').innerHTML = '结束时间：' + json['EndTime'];
+				if(json['TextHomework'] == '' && json['FileHomeworkPath'] == ''){
+					document.getElementById('submitstatus').innerHTML = '还未提交过作业';
+				}
+				if(json['Score'] != ''){
+					str = str + '<li>作业评分：' + json['Score']  + '</li>'
+				}
+				if(json['Comment'] != ''){
+					str = str + '<li>作业评价：' + json['Comment']  + '</li>'
+				}
+				if(json['TextHomework'] != ''){
+					document.getElementById('submitstatus').innerHTML = '已提交过作业';
+					str = str + '<li>' + '已提交的作业文本:<br><p>' + json['TextHomework'] + '</p></li>';
+				}
+				if(json['FileHomeworkPath'] != ''){
+					document.getElementById('submitstatus').innerHTML = '已提交过作业';
+					str = str + '<li>' + '<a href="' + json['FileHomeworkPath'] + '">点此下载提交过的文件</a>' + '</li>';
+				}
+				hc.append(str);
+			});
+		}
 		function uploadFile(){
 			var si = document.getElementById('filetype').selectedIndex;
 			var filetype = document.getElementById('filetype').options[si].value;
@@ -181,7 +181,6 @@
 			var homeworkid = document.getElementById('homeworkid').innerHTML;
 			var studentid = getCookie('studentid');
 			var form = new FormData();
-
 			if(fileObj != undefined){
 				if(!checkFileType(filetype, getFileFormat(fileObj.name))){
 					alert('文件格式不符，请重新选择！');
@@ -202,14 +201,11 @@
 			var xhr = new XMLHttpRequest();
 			xhr.open("post", fileController, true);
 			xhr.onreadystatechange = function () {
-				if(xhr.readyState == 4 && xhr.status == 200){
+		  if(xhr.readyState == 4 && xhr.status == 200){
 					var data = eval('(' + xhr.responseText + ')');
-					var json = eval('(' + data + ')');
+          var json = eval('(' + data + ')');                  
 					if(json['Status'] == 'Success'){
 						document.getElementById('uploadstatus').innerHTML = '<span style="color: green">作业提交成功！</span>';
-					}
-					else if(json['Status'] == 'Repeat'){
-						document.getElementById('uploadstatus').innerHTML = '<span style="color: red">上传失败！文件已存在。</span>';
 					}
 					else if(json['Status'] == 'Fail'){
 						document.getElementById('uploadstatus').innerHTML = '<span style="color: red">作业提交失败。</span>';
@@ -217,6 +213,11 @@
 				}
 			};
 			xhr.send(form);
+		}
+		function toStudentComm(courseid){
+			//进入courseid的课程讨论区
+			var str = '/CoPlat/studentCommunication_load/' + '?id=' + courseid;
+			window.open(encodeURI(str));
 		}
 
 	</script>
@@ -247,7 +248,7 @@
 			</div>
 			<div class="col-md-2">
 				<div class="item">
-					<a href="" target="_self">组建队伍(暂不可用)</a>
+					<a href="/CoPlat/student_team_load/" target="_self">团队管理</a>
 				</div>
 			</div>
 			<div class="col-md-2">
@@ -328,6 +329,7 @@
 							<label id="homeworkid"></label>
 							<ul id="homeworkdetail">
 								<li id="hdescription"></li>
+								<li id="homeworktype"></li>
 								<li id="hstarttime"></li>
 								<li id="hendtime"></li>
 								<li id="submitstatus"></li>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统</title>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
+	<script>
+		$(document).ready(teacherReady);
+		window.onload = function(){
+			//获取该教师的全部团队课程列表
+			var tcl = $('#teamcourselist');
+		var teacherid = getCookie('teacherid');
+			var url = '/CoPlat/teacher_teamcourselist_response/';
+			$.post(url, {TeacherId: teacherid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var str = '';
+				var length = json.courses.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="displayCourseTeamList(\'' + json.courses[i].CourseId + '\')">' + json.courses[i].CourseName + '</button>' + '</td></tr>'
+				}
+				tcl.empty();
+				tcl.append(str);
+			});
+		};
+
+		//显示已经加入该课程的团队列表
+		function displayCourseTeamList(courseid){
+			document.getElementById('courseid').innerHTML = courseid;
+			document.getElementById('teamdetailcontainer').style.display = 'none';
+			$('#applylist').empty();
+			var ctl = $('#courseteamlist');
+			var url = '/CoPlat/display_enrolledteams_response/';
+			var str = '';
+			$.post(url, {CourseId: courseid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var length = json.Teams.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="displayTeamDetail(\'' + json.Teams[i].TeamId + '\')">' + json.Teams[i].TeamName + '</button>' + '</td></tr>'
+				}
+				ctl.empty();
+				ctl.append(str);
+			});
+		}
+
+		//显示申请加入该课程的团队列表
+		function displayApplyList(){
+			var courseid = document.getElementById('courseid').innerHTML;
+			var al = $('#applylist');
+			var url = '/CoPlat/display_readyteams_response/';
+			var str = '';
+			$.post(url, {CourseId: courseid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var length = json.Teams.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="displayApplyTeamDetail(\'' + json.Teams[i].TeamId + '\')">' + json.Teams[i].TeamName + '</button>' + '</td></tr>'
+				}
+				al.empty();
+				al.append(str);
+			});
+		}
+
+		//显示已加入该课程的团队详情
+		function displayTeamDetail(teamid){
+			document.getElementById('teamdetailcontainer').style.display = 'block';
+			var teamdetail = $('#teamdetail');
+			var str = '';
+			var url = '/CoPlat/team_details_response/';
+			$.post(url, {TeamId:teamid}).success(function(data){
+				var json = eval('(' + data + ')');
+				str = str + '<tr><td>' + '团队名称：' + json['TeamName'] + '</td></tr>';
+				str = str + '<tr><td>' + '团队简介：' + json['TeamDes'] + '</td></tr>';
+				str = str + '<tr><td>' + '团队成员：' + '</td></tr>';
+				var length = json.Members.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td><div style="text-indent: 2rem">' + json.Members[i].StudentId + ' ' + json.Members[i].StudentName + '</div></td></tr>';
+				}
+				teamdetail.empty();
+				teamdetail.append(str);
+			});
+		}
+
+		//显示申请加入该课程的团队详情
+		function displayApplyTeamDetail(teamid){
+			document.getElementById('teamdetailcontainer').style.display = 'block';
+			var teamdetail = $('#teamdetail');
+			var str = '';
+			var url = '/CoPlat/team_details_response/';
+			$.post(url, {TeamId : teamid}).success(function(data){
+				var json = eval('(' + data + ')');
+				str = str + '<tr><td>' + '团队名称：' + json['TeamName'] + '</td></tr>';
+				str = str + '<tr><td>' + '团队简介：' + json['TeamName'] + '</td></tr>';
+				str = str + '<tr><td>' + '团队成员：' + '</td></tr>';
+				var length = json.Members.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td><div style="text-indent: 2rem">' + json.Members[i].StudentId + ' ' + json.Members[i].StudentName + '</div></td></tr>';
+				}
+				str = str + '<tr><td><button class="btn btn-success" onclick="admitTeam(\'' + teamid + '\')">同意加入课程</button>' + '</td></tr>';
+				teamdetail.empty();
+				teamdetail.append(str);
+			});
+		}
+
+		//教师批准团队加入课程
+		function admitTeam(teamid){
+			var courseid = document.getElementById('courseid').innerHTML;
+			var url = '/CoPlat/team_enroll_response/';
+			$.post(url, {TeamId: teamid, CourseId: courseid}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('操作成功！');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('操作失败！请稍候再试');
+				}
+			});
+		}
+
+	</script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/teacher_course_load/" target="_self">查看课程</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="selecteditem">
+					<a href="/CoPlat/teacher_team_load/" target="_self">团队管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/teacherInformation_load/" target="_self">管理个人信息</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2">
+			<div id="maincontainerL">
+				<table class="table" style="text-align: center">
+					<thead><tr><td>团队课程列表</td></tr></thead>
+					<tbody id="teamcourselist"></tbody>
+				</table>
+			</div>
+		</div>
+		<div class="col-md-10">
+			<div id="maincontainerR">
+				<div class="row">
+					<div class="col-md-6">
+						<div id="teamlistcontainer">
+							<div class="col-md-6">
+								<table class="table">
+									<thead style="text-align: center">
+									<tr><td><div id="courseid" style="display: none"></div>已经加入该课程的团队</td></tr>
+									</thead>
+									<tbody style="text-align: center" id="courseteamlist"></tbody>
+								</table>
+							</div>
+							<div class="col-md-6">
+								<table class="table">
+									<thead style="text-align: center">
+									<tr><td><button class="btn btn-info" onclick = "displayApplyList()">查看申请加入课程的团队</button></td></tr>
+									</thead>
+									<tbody style="text-align: center" id="applylist"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div id="teamdetailcontainer" style="display: none;">
+							<table class="table">
+								<thead><tr><th></th></tr></thead>
+								<tbody id="teamdetail"></tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

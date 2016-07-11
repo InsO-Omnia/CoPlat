@@ -13,6 +13,8 @@
 		function look(){
 			//获得课程列表
 			$('#coursedetail').empty();
+            document.getElementById('screatecontainer').style.display = 'none';
+			document.getElementById('smanagecontainer').style.display = 'none';
 			document.getElementById('createcourse').style.display = 'none';
 			document.getElementById('lookcourse').style.display = 'block';
 			var courselist = $('#courselist');
@@ -29,11 +31,27 @@
 			});
 		}
 		function create(){
+            document.getElementById('screatecontainer').style.display = 'none';
+			document.getElementById('smanagecontainer').style.display = 'none';
 			document.getElementById('lookcourse').style.display = 'none';
 			document.getElementById('createcourse').style.display = 'block';
 		}
+        function displaySCreateContainer(){
+			document.getElementById('smanagecontainer').style.display = 'none';
+			document.getElementById('lookcourse').style.display = 'none';
+			document.getElementById('createcourse').style.display = 'none';
+			document.getElementById('screatecontainer').style.display = 'block';
+		}
+		function displaySManageContainer(){
+			document.getElementById('lookcourse').style.display = 'none';
+			document.getElementById('createcourse').style.display = 'none';
+			document.getElementById('screatecontainer').style.display = 'none';
+			document.getElementById('smanagecontainer').style.display = 'block';
+		}
 		function createCourse(){
 			//建立新课程
+            var ctindex = document.getElementById('coursetype').selectedIndex;
+			var ctype = document.getElementById('coursetype').options[ctindex].value;
 			var cn = $('#cname');
 			var cname = cn.val();
 			var cc = $('#ccredit');
@@ -53,7 +71,7 @@
 				return;
 			}
 			var url = '/CoPlat/create_new_course/';
-			$.post(url, {Name: cname, Credit: ccredit, Weeks: cweeks, StartDate : csdate, EndDate: cedate}).success(function(data){
+			$.post(url, {Name: cname, Credit: ccredit,Type: ctype,  Weeks: cweeks, StartDate : csdate, EndDate: cedate}).success(function(data){
 				var json = data;
 				if(json['Status'] == 'Success'){
 					alert('课程添加成功!');
@@ -166,6 +184,93 @@
 				}
 			});
 		}
+
+        //判断是否是excel文件
+		function checkExcelFormat(filename){
+			var format = getFileFormat(filename);
+			if(format == '.xls' || format == '.xlsx'){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
+		//批量建立新课程
+		function sCreateCourse(){
+			var scf = document.getElementById('scfile');
+			var fileObj = scf.files[0];
+			if(fileObj == undefined){
+				alert('请选择要上传的文件！');
+				return;
+			}
+			var filename = fileObj.name;
+			if(!checkExcelFormat(filename)){
+				alert('上传的不是Excel文件，请重新选择！');
+				return;
+			}
+
+			//要处理文件的url
+			var fileController = '/CoPlat/multicourse_import/';
+			var form = new FormData();
+			form.append('File',fileObj);
+			form.enctype = 'multipart/form-data';
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("post", fileController, true);
+			xhr.onreadystatechange = function () {
+				if(xhr.readyState == 4 && xhr.status == 200){
+					var data = xhr.responseText;
+					var json = data;
+					if(json['Status'] == 'Success'){
+						document.getElementById('scuploadstatus').innerHTML = '<span style="color: green">文件提交成功！</span>';
+						scf.val('');
+					}
+					else if(json['Status'] == 'Fail'){
+						document.getElementById('scuploadstatus').innerHTML = '<span style="color: red">文件提交失败。</span>';
+					}
+				}
+			};
+			xhr.send(form);
+		}
+
+		//批量管理课程
+		function sManageCourse(){
+			var smf = document.getElementById('smfile');
+			var fileObj = smf.files[0];
+			if(fileObj == undefined){
+				alert('请选择要上传的文件！');
+				return;
+			}
+			var filename = fileObj.name;
+			if(!checkExcelFormat(filename)){
+				alert('上传的不是Excel文件，请重新选择！');
+				return;
+			}
+
+			//要处理文件的url
+			var fileController = '/CoPlat/multiallocation_import_response/';
+			var form = new FormData();
+			form.append('File',fileObj);
+			form.enctype = 'multipart/form-data';
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("post", fileController, true);
+			xhr.onreadystatechange = function () {
+				if(xhr.readyState == 4 && xhr.status == 200){
+					var data = xhr.responseText;
+					var json = data;
+					if(json['Status'] == 'Success'){
+						document.getElementById('smuploadstatus').innerHTML = '<span style="color: green">文件提交成功！</span>';
+						smf.val('');
+					}
+					else if(json['Status'] == 'Fail'){
+						document.getElementById('smuploadstatus').innerHTML = '<span style="color: red">文件提交失败。</span>';
+					}
+				}
+			};
+			xhr.send(form);
+		}
 	</script>
 </head>
 <body>
@@ -194,11 +299,7 @@
 					<a href="/CoPlat/adminCourse_load/" target="_self">课程管理</a>
 				</div>
 			</div>
-			<div class="col-md-2">
-				<div class="item">
-					<a href="" target="_self">用户信息管理(暂不可用)</a>
-				</div>
-			</div>
+
 		</div>
 	</div>
 	<div class="row">
@@ -209,6 +310,12 @@
 				</div>
 				<div class="form-group">
 					<button class="btn btn-default" onclick="create()">建立新课程</button>
+				</div>
+         <div class="form-group">
+					<button class="btn btn-default" onclick="displaySCreateContainer()" style="display: none">批量建立新课程</button>
+				</div>
+				<div class="form-group">
+					<button class="btn btn-default" onclick="displaySManageContainer()" style="display: none">批量管理课程</button>
 				</div>
 			</div>
 		</div>
@@ -254,6 +361,13 @@
 								</div>
 							</div>
 							<div class="form-group">
+								<label for="coursetype">选择课程类型</label>
+								<select id="coursetype" class="form-control">
+									<option value="person">个人课程</option>
+									<option value="team">团队课程</option>
+								</select>
+							</div>
+							<div class="form-group">
 								<div class="input-group">
 									<div class="input-group-addon">开始日期</div>
 									<input class="form-control" type="date" id="csdate">
@@ -273,6 +387,28 @@
 							</div>
 							<div class="form-group">
 								<button class="btn btn-default" onclick="createCourse()">提交</button>
+							</div>
+						</div>
+					</div>
+				</div>
+                <div class="row">
+					<div class="col-md-4">
+						<div id="screatecontainer" style="display: none">
+							<div class="form-group">
+								<input id="scfile" type="file">
+								<p id="scuploadstatus"></p>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" onclick="sCreateCourse()">提交</button>
+							</div>
+						</div>
+						<div id="smanagecontainer" style="display: none">
+							<div class="form-group">
+								<input id="smfile" type="file">
+								<p id="smuploadstatus"></p>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" onclick="sManageCourse()">提交</button>
 							</div>
 						</div>
 					</div>

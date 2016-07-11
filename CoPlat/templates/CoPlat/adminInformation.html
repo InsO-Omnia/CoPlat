@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统-管理员</title>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
+	<script>
+		$(document).ready(adminReady);
+		function displaySAddStudent(){
+			document.getElementById('saddteachercontainer').style.display = 'none';
+			document.getElementById('saddstudentcontainer').style.display = 'block';
+		}
+		function displaySAddTeacher(){
+			document.getElementById('saddstudentcontainer').style.display = 'none';
+			document.getElementById('saddteachercontainer').style.display = 'block';
+		}
+
+		//判断是否是excel文件
+		function checkExcelFormat(filename){
+			var format = getFileFormat(filename);
+			if(format == '.xls' || format == '.xlsx'){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
+		//批量添加学生
+		function sAddStudent(){
+			var ssf = document.getElementById('ssfile');
+			var fileObj = ssf.files[0];
+			if(fileObj == undefined){
+				alert('请选择要上传的文件！');
+				return;
+			}
+			var filename = fileObj.name;
+			if(!checkExcelFormat(filename)){
+				alert('上传的不是Excel文件，请重新选择！');
+				return;
+			}
+
+			//要处理文件的url
+			var fileController = '/CoPlat/multistudent_import/';
+			var form = new FormData();
+			form.append('File',fileObj);
+			form.enctype = 'multipart/form-data';
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("post", fileController, true);
+			xhr.onreadystatechange = function () {
+				if(xhr.readyState == 4 && xhr.status == 200){
+					var data = xhr.responseText;
+					var json = data;
+					if(json['Status'] == 'Success'){
+						document.getElementById('scuploadstatus').innerHTML = '<span style="color: green">文件提交成功！</span>';
+						ssf.val('');
+					}
+					else if(json['Status'] == 'Fail'){
+						document.getElementById('scuploadstatus').innerHTML = '<span style="color: red">文件提交失败。</span>';
+					}
+				}
+			};
+			xhr.send(form);
+		}
+
+		//批量添加教师
+		function sAddTeacher(){
+			var stf = document.getElementById('stfile');
+			var fileObj = stf.files[0];
+			if(fileObj == undefined){
+				alert('请选择要上传的文件！');
+				return;
+			}
+			var filename = fileObj.name;
+			if(!checkExcelFormat(filename)){
+				alert('上传的不是Excel文件，请重新选择！');
+				return;
+			}
+
+			//要处理文件的url
+			var fileController = '/CoPlat/multiteacher_import/';
+			var form = new FormData();
+			form.append('File',fileObj);
+			form.enctype = 'multipart/form-data';
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("post", fileController, true);
+			xhr.onreadystatechange = function () {
+				if(xhr.readyState == 4 && xhr.status == 200){
+					var data = xhr.responseText;
+					var json = data;
+					if(json['Status'] == 'Success'){
+						document.getElementById('scuploadstatus').innerHTML = '<span style="color: green">文件提交成功！</span>';
+						stf.val('');
+					}
+					else if(json['Status'] == 'Fail'){
+						document.getElementById('scuploadstatus').innerHTML = '<span style="color: red">文件提交失败。</span>';
+					}
+				}
+			};
+			xhr.send(form);
+		}
+	</script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统-<span style="color: red;font-weight: bold">管理员</span>
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/adminSemester_load/" target="_self">学期管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/adminCourse_load/" target="_self">课程管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="selecteditem">
+					<a href="/CoPlat/adminInformation_load/" target="_self" disabled="true">用户信息管理</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2">
+			<div id="maincontainerL">
+				<div class="form-group">
+					<button class="btn btn-default" onclick="displaySAddStudent()">批量添加学生</button>
+				</div>
+				<div class="form-group">
+					<button class="btn btn-default" onclick="displaySAddTeacher()">批量添加教师</button>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-10">
+			<div id="maincontainerR">
+				<div class="row">
+					<div class="col-md-4">
+						<div id="saddstudentcontainer" style="display: none">
+							<div class="form-group">
+								<input id="ssfile" type="file">
+								<p id="ssuploadstatus"></p>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" onclick="sAddStudent()">提交</button>
+							</div>
+						</div>
+						<div id="saddteachercontainer" style="display: none">
+							<div class="form-group">
+								<input id="stfile" type="file">
+								<p id="stuploadstatus"></p>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" onclick="sAddTeacher()">提交</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

@@ -30,6 +30,11 @@ urlpatterns = [
      url(r'^displayStudentList_load/', views.displayStudentList_load, name='displayStudentList_load'),
     url(r'^studentInformation_load/', views.studentInformation_load, name='studentInformation_load'),
     url(r'^teacherInformation_load/', views.teacherInformation_load, name='teacherInformation_load'),
+    url(r'^student_team_load/', views.student_team_load, name='student_team_load'),
+    url(r'^teacher_team_load/', views.teacher_team_load, name='teacher_team_load'),
+
+    url(r'^studentCommunication_load/', views.studentCommunication_load, name='studentCommunication_load'),
+    url(r'^teacherCommunication_load/', views.teacherCommunication_load, name='teacherCommunication_load'),
 
     # info verification urls.
     url(r'^login_verify/', views.login_verify, name='login_verify'),
@@ -74,6 +79,7 @@ urlpatterns = [
     url(r'^allocate_teachers_to_course',views.allocate_teachers_to_course,name='allocate_teachers_to_course'),
 
     ###requests related with teams
+    url(r'^team_courselist_response', views.team_courselist_response, name='team_courselist_response'),
     url(r'^team_build_response', views.team_build_response, name='team_build_response'),
     url(r'^team_memberlist_response', views.team_memberlist_response, name='team_memberlist_response'),
     url(r'^leader_switch_response', views.leader_switch_response, name='leader_switch_response'),
@@ -85,15 +91,18 @@ urlpatterns = [
     url(r'^application_setstatus_response', views.application_setstatus_response, name='application_setstatus_response'),
     url(r'^team_isready_response', views.team_isready_response, name='team_isready_response'),
     url(r'^team_setready_response', views.team_setready_response, name='team_setready_response'),
+    url(r'^student_teamlist_response',views.student_teamlist_response,name='student_teamlist_response'),
+     url(r'^application_management_response',views.application_management_response,name='application_management_response'),
+    url(r'^display_activeteams_response',views.display_activeteams_response,name='display_activeteams_response'),
+
+    url(r'^teacher_teamcourselist_response',views.teacher_teamcourselist_response,name='teacher_teamcourselist_response'),
     url(r'^display_enrolledteams_response',views.display_enrolledteams_response,name='display_enrolledteams_response'),
     url(r'^display_readyteams_response',views.display_readyteams_response,name='display_readyteams_response'),
     url(r'^team_details_response',views.team_details_response,name='team_details_response'),
     url(r'^team_enroll_response',views.team_enroll_response,name='team_enroll_response'),
 
+    url(r'^send_message/', views.send_message, name='send_message'),
+    url(r'^show_message/', views.show_message, name='show_message'),
 ]
 
-    # url(r'^chat_load', views.chat_load, name='chat_load'),
-    # # url(r'^p/(?P<id>\d+)/$', single_post),
-    # # url(r'^topic/(?P<id>\d+)/$', show_topic),
-    # url(r'^post/$', views.post),
 

@@ -40,7 +40,7 @@ function getJsonLength(jsonObj){
 function adminQuit(cname){
 	clearCookie(cname);
 	alert('已成功退出');
-	window.location.href = '/CoPlat/'
+	window.location.href = '/CoPlat/admin_load/'
 }
 
 function teacherQuit(cname){
@@ -59,7 +59,7 @@ function adminReady(){
 	var userid = getCookie('adminid');
 	if(userid == ''){
 		alert('未以管理员身份登录系统，请登录！');
-		window.location.href = './CoPlat/admin_load/';
+		window.location.href = '/CoPlat/admin_load/';
 		return;
 	}
 	var userinfo = $('#userinfo');
@@ -170,8 +170,6 @@ function checkDate(st, et, weeks){
 	else{
 		return false;
 	}
-
-
 }
 
 function getValue(search){

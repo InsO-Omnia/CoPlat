@@ -91,7 +91,7 @@ class Team(models.Model):
      Name = models.CharField(max_length = 500)
      Description = models.CharField(max_length = 2000)
      Capacity = models.IntegerField(default = 1)
-     Limit = models.IntegerField()
+     Limit = models.IntegerField(default = 20)
      Readily_Builded = models.BooleanField(default = False)
      #Choice for Response_Status
      RE = 'rejected'
@@ -108,10 +108,10 @@ class Team(models.Model):
      Members = models.ManyToManyField(Student, through='Membership')
      Candidates = models.ManyToManyField(Student, through='Team_Application', related_name = 'applications_set')
      def __str__(self):
-        return self.No
+         return self.No
      def get_team_info(self):
-        res = str ("{ \"TeamId\" : \"" + self.No + "\"," + "\"TeamName\" :\"" + self.Name + "\"}")
-        return res
+         res = str ("{ \"TeamId\" : \"" + self.No + "\"," + "\"TeamName\" :\"" + self.Name + "\"}")
+         return res
 
 class Coursework(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
@@ -127,7 +127,7 @@ class Coursework(models.Model):
         return self.No
 
     def get_coursework_info(self):
-        res = str ("{ \"CourseId\" : \"" + self.No + "\"," + "\"CourseName\" :\"" + self.Title + "\"}")
+        res = str ("{ \"HomeworkId\" : \"" + self.No + "\"," + "\"HomeworkTitle\" :\"" + self.Title + "\"}")
         return res
 
 class Resource(models.Model):
@@ -176,8 +176,8 @@ class Instruction(models.Model):
 
 class Membership(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
-    Student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    Team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
 class Assignment(models.Model):
     No = models.CharField(max_length = 50, primary_key = True)
@@ -186,7 +186,7 @@ class Assignment(models.Model):
     Title = models.CharField(max_length = 200)
     Content = models.CharField(max_length=2000)
     Attachment = models.FileField(upload_to = 'Coursework')
-    Score = models.IntegerField(blank = True)
+    Score = models.IntegerField(null = True)
     Comment = models.CharField(max_length=2000)
 
 class Team_Assignment(models.Model):
@@ -219,5 +219,6 @@ class Message(models.Model):
      sender = models.ForeignKey(User, related_name='has_chats')
      content = models.TextField()
      time = models.DateTimeField(auto_now_add = True)
+     course = models.ForeignKey(Course, on_delete=models.CASCADE)
      def __unicode__(self):
          return u'%s' % self.content

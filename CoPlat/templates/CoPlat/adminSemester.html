@@ -40,6 +40,7 @@
 			}
 			if(!checkDate(stime, etime, weeks)){
 				alert('相关信息填写有误(起始日期与周数不同)，请检查！');
+                return;
 			}
 			var url = '/CoPlat/set_semester_response';
 			$.post(url, {StartTime: stime, EndTime: etime, Weeks: weeks}).success(function(data){
@@ -81,11 +82,7 @@
 					<a href="/CoPlat/adminCourse_load/" target="_self">课程管理</a>
 				</div>
 			</div>
-			<div class="col-md-2">
-				<div class="item">
-					<a href="" target="_self">用户信息管理(暂不可用)</a>
-				</div>
-			</div>
+		
 		</div>
 	</div>
 	<div class="row">

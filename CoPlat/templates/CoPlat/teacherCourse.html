@@ -69,9 +69,10 @@
 				}
 				str = str + '<tr><td>' + '课程学分：' + credit + '</td></tr>';
 				str = str + '<tr><td>' + '课程周数：' + weeks + '</td></tr>';
-				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="displayStudentList()">' + '查看本课程学生名单</button>' + '</td></tr>';
 				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="diliverySource()">' + '发布资源</button>' + '</td></tr>';
 				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="teacherHomework()">' + '管理作业</button>' + '</td></tr>';
+				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="displayStudentList()">' + '查看本课程学生名单</button>' + '</td></tr>';
+				str = str + '<tr><td>' + '<button class="btn btn-info" onclick="toTeacherComm(\'' + courseid + '\')">进入课程讨论区</button>' + '</td></tr>';
 				cd.empty();
 				cd.append(str);
 			});
@@ -97,10 +98,11 @@
 			var url = '/CoPlat/courseworklist_response/';
 			$.post(url,{CourseId: courseid}).success(function(data){
 				var json = eval('(' + data + ')');
+
 				var str = '<tr><td style="text-align: center"><p>作业列表</p></td></tr>';
-				var length = getJsonLength(json);
+				var length = json.Homeworks.length;
 				for(var i = 0 ; i < length ; i++){
-					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="homeworkDetail(\'' + json[i] + '\')">' + json[i] + '</button>' + '</td></tr>';
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="homeworkDetail(\'' + json.Homeworks[i].HomeworkId + '\')">' + json.Homeworks[i].HomeworkTitle + '</button>' + '</td></tr>';
 				}
 				hl.empty();
 				hl.append(str);
@@ -114,22 +116,28 @@
 			$('#hdescription').val('');
 			$('#hstarttime').val('');
 			$('#hendtime').val('');
+			$('#homeworktitle').val('');
 		}
 		function addHomework(){
 			//添加新作业
 			var courseid = document.getElementById('courseid').innerHTML;
-			var description = $('#hdescription').val();
-			var starttime = $('#hstarttime').val();
-{#			alert(starttime);#}
-			var endtime = $('#hendtime').val();
+			var hdes = $('#hdescription');
+			var description = hdes.val();
+			var hst =  $('#hstarttime');
+			var starttime = hst.val();
+			var het = $('#hendtime');
+			var endtime = het.val();
+			var htitle = $('#homeworktitle');
+			var title = htitle.val();
 			if(description == '' || starttime == '' || endtime == ''){
 				alert('请正确填写作业信息！');
 				return;
 			}
+			var htindex = document.getElementById('homeworktype').selectedIndex;
+			var homeworktype = document.getElementById('homeworktype').options[htindex].value;
 			var url = '/CoPlat/add_coursework_response/';
-			$.post(url, {CourseId: courseid, Description: description, StartTime: starttime, EndTime: endtime}).success(function(data){
-                var json = data;
-                           // alert(json);
+			$.post(url, {CourseId: courseid,  Title: title,Description: description, HomeworkType: homeworktype, StartTime: starttime, EndTime: endtime}).success(function(data){ alert(data);
+				var json = eval('(' + data + ')');
 				if(json['Status'] == 'Success'){
 					alert('作业添加成功！');
 					displayAddHomework();
@@ -160,22 +168,7 @@
 				hsl.append(str);
 			});
 		}
-
-{#		function displayedhomework(studentid){#}
-{#			$('#comment').val('');#}
-{#			document.getElementById('displayedhomework').style.display = 'block';#}
-{#			document.getElementById('studentid').innerHTML = studentid;#}
-{#			var homeworkid = document.getElementById('homeworkid').innerHTML;#}
-{#			var url = '/CoPlat/particular_courseworkpath_response/';#}
-{#			var path = '';#}
-{#			$.post(url, {StudentId: studentid, HomeworkId: homeworkid}).success(function(data){#}
-{#				var json = data;#}
-{#				path = json['Path'];#}
-{#				$('#download').attr('href', path);#}
-{#			});#}
-{#		}#}
-
-        function displayedhomework(studentid){
+		function displayedhomework(studentid){
 			//获取该学生的作业内容
 			document.getElementById('downloadguide').style.display = 'none';
 			document.getElementById('download').innerHTML = '';
@@ -187,7 +180,7 @@
 			var url = '/CoPlat/particular_courseworkpath_response/';
 			var path = '';
 			$.post(url, {StudentId: studentid, HomeworkId: homeworkid}).success(function(data){
-				var json = data;
+				var json = eval('(' + data + ')');
 				path = json['Path'];
 				if(path != ''){
 					$('#download').attr('href', path);
@@ -200,7 +193,6 @@
 				}
 			});
 		}
-
 		function submitComment(){
 			//提交作业评论
 			var commenttext = $('#comment').val();
@@ -251,8 +243,8 @@
 			xhr.onreadystatechange = function () {
 				if(xhr.readyState == 4 && xhr.status == 200){
 					var data = eval('(' + xhr.responseText + ')');
-          var json = eval('(' + data + ')');
-          if(json['Status'] == 'Success'){
+          var json = eval('(' + data + ')')
+					if(json['Status'] == 'Success'){
 						document.getElementById('uploadstatus').innerHTML = '<span style="color: green">文件上传成功！</span>';
 					}
 					else{
@@ -264,9 +256,15 @@
 
 		}
 		function displayStudentList(){
+			//显示该课程全部学生名单
 			var courseid = document.getElementById('courseid').innerHTML;
-			var str = './displayStudentList.html' + '?id=' + courseid;
-			window.location.href = str;
+			var str = '/CoPlat/displayStudentList_load/' + '?id=' + courseid;
+			window.open(encodeURI(str));
+		}
+		function toTeacherComm(courseid){
+			//进入courseid的课程讨论区
+			var str = '/CoPlat/teacherCommunication_load/' + '?id=' + courseid;
+			window.open(encodeURI(str));
 		}
 	</script>
 </head>
@@ -288,7 +286,12 @@
 		<div class="row">
 			<div class="col-md-2">
 				<div class="selecteditem">
-					<a href="./teacherCourse.html" target="_self">查看课程</a>
+					<a href="/CoPlat/teacher_course_load/" target="_self">查看课程</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/teacher_team_load/" target="_self">团队管理</a>
 				</div>
 			</div>
 			<div class="col-md-2">
@@ -352,9 +355,20 @@
 							</table>
 							<div id="addhomework" style="display: none">
 								<div class="form-group">
+									<div class="form-group">
+									<label for="homeworktitle">作业主题</label>
+									<input class="form-control" type="text" id="homeworktitle">
+								</div>
 									<label for="hdescription">作业描述</label>
 									<br>
 									<textarea class="form-control" id="hdescription" rows="3"></textarea>
+								</div>
+								<div class="form-group">
+									<label for="homeworktype">作业类型</label>
+									<select class="form-control" id="homeworktype">
+										<option value="person">个人作业</option>
+										<option value="team">团队作业</option>
+									</select>
 								</div>
 								<div class="form-group">
 									<label for="hstarttime">起始时间</label>
@@ -430,7 +444,7 @@
 								<button class="btn btn-default" onclick="submitComment()">提交</button>
 							</div>
 						</div>
-                    </div>
+					</div>
 				</div>
 			</div>
 		</div>

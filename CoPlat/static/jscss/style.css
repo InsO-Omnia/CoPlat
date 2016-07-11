@@ -76,3 +76,43 @@ body{
 	padding: 1.5rem;
 	border-radius: 8px;
 }
+
+#mytextcontainer{
+	width: 36rem;
+	position: fixed;
+}
+.contentcontainer{
+	/*background-color: rgba(30,168,138,1);*/
+	background-color: #66ccFF;
+	padding-top: 1rem;
+	padding-bottom:1rem;
+	padding-left: 2rem;
+	padding-right: 2rem;
+	border-radius: 8px;
+	background-size: cover;
+	width: 100%;
+}
+.contentcontainer .author{
+	background-color: rgba(255,255,255,0.9);
+	max-width: 75rem;
+	border-radius: 8px;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	padding-left: 1rem;
+	padding-right: 2rem;
+	margin-bottom: 1rem;
+
+}
+.contentcontainer .content{
+	background-color: rgba(255,255,255,0.9);
+	max-width: 75rem;
+	border-radius: 8px;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+	padding-left: 2rem;
+	padding-right: 2rem;
+}
+
+.contentcontainer .content p{
+	word-wrap:break-word;
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统</title>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
+	<script>
+		$(document).ready(studentReady);
+
+		//根据courseid获取课程名称和该课程讨论区当前帖子
+		window.onload = function(){
+			var courseid = getValue(location.search);
+			var url = '/CoPlat/show_message/'
+			$.post(url, {CourseId: courseid}).success(function(data){
+                var json = data;
+				//var json = eval('(' + data + ')');
+				document.getElementById('commtitle').innerHTML = json['Name'];
+				var d = $('#dialogue');
+				var str = '';
+				var length = json.Messages.length;
+				for(var i = 0 ; i < length ; i++){
+                    var content = decodeURI(json.Messages[i].ContentText);
+                    content = content.replace(/\n/g, '<br>');
+					str = str + '<tr><td>' +
+									'<div class="contentcontainer"> ' +
+										'<div class="author"> ' +
+											json.Messages[i].AuthorId + '-' + json.Messages[i].AuthorName + '\t发布于：' + json.Messages[i].MTime +
+										'</div>' +
+										'<div class="content"><p>' +
+											content +
+										'</p></div>' +
+									'</div>' +
+								'</td></tr>';
+				}
+				d.empty();
+				d.append(str);
+			});
+		};
+
+
+		function addMessage(){
+			var mytext = $('#mytext');
+			var content = mytext.val();
+            content = encodeURI(content);
+			if(content == ''){
+				alert('要发布的消息内容为空！请输入要发布的消息');
+				return;
+			}
+			var courseid = getValue(location.search);
+			var userid = getCookie('studentid');
+			var d = new Date();
+			var time = d.getTime();
+			var url = '/CoPlat/send_message/';
+			$.post(url, {CourseId: courseid, UserId: userid, Content: content, Time: time}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('发布成功！');
+					mytext.val('');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('发布失败！请稍候重试。');
+				}
+			});
+			location.reload();
+		}
+	</script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="item">
+					<div id="commtitle" style="color: ghostwhite"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div id="maincontainer">
+				<div class="row">
+					<div class="col-md-8">
+						<div id="dialoguecontainer">
+							<table class="table">
+								<thead><tr><td></td></tr></thead>
+								<tbody id="dialogue"></tbody>
+							</table>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div id="mytextcontainer">
+							<div class="form-group">
+								<label for="mytext">请输入要发布的内容：</label>
+								<textarea class="form-control" id="mytext" rows="3"></textarea>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-success" onclick="addMessage()">发送</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

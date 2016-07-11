@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+	<meta charset="UTF-8">
+	<title>在线协同教学系统</title>
+	<script src="../../static/jscss/jquery-2.1.4.min.js"></script>
+	<script src="../../static/jscss/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="../../static/jscss/bootstrap.min.css">
+	<link rel="stylesheet" href="../../static/jscss/style.css">
+	<script src="../../static/jscss/my.js"></script>
+	<script>
+		$(document).ready(studentReady);
+		window.onload = function(){
+			//获取全部团队课程列表
+			var tcl = $('#teamcourselist');
+			var url = '/CoPlat/team_courselist_response/';
+		$.post(url).success(function(data){
+				var json = eval('(' + data + ')');
+				var str = '';
+				var length = json.courses.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="displayCourseTeamList(\'' + json.courses[i].CourseId + '\')">' + json.courses[i].CourseName + '</button>' + '</td></tr>'
+				}
+				tcl.empty();
+				tcl.append(str);
+			});
+		};
+
+		//获取某课程的团队列表
+		function displayCourseTeamList(courseid){
+			document.getElementById('courseid').innerHTML = courseid;
+			document.getElementById('applyresultcontainer').style.display = 'none';
+			document.getElementById('myteamcontainer').style.display = 'none';
+			document.getElementById('createteamcontainer').style.display = 'none';
+			document.getElementById('coursecontainer').style.display = 'block';
+			document.getElementById('teamdetailcontainer').style.display = 'none';
+			var ctl = $('#courseteamlist');
+			var url = '/CoPlat/display_activeteams_response/';
+			var str = '';
+			$.post(url, {CourseId: courseid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var length = json.Teams.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="displayTeamDetail(\'' + json.Teams[i].TeamId + '\')">' + json.Teams[i].TeamName + '</button>' + '</td></tr>'
+				}
+				ctl.empty();
+				ctl.append(str);
+			});
+		}
+
+		//申请者获取某团队详细信息
+		//申请者获取某团队详细信息
+function displayTeamDetail(teamid){
+   document.getElementById('teamdetailcontainer').style.display = 'block';
+   document.getElementById('teamid').innerHTML = teamid;
+   var teamdetail = $('#teamdetail');
+   var url = '/CoPlat/team_notready_details_response/';
+   $.post(url, {TeamId: teamid}).success(function(data){
+      var json = eval('(' + data + ')');
+      var str = '';
+      str = str + '<tr><td>' + '团队名称：' + json['TeamName'] + '</td></tr>';
+      str = str + '<tr><td>' + '团队简介：' + json['TeamDes'] + '</td></tr>';
+      str = str + '<tr><td>' + '剩余名额：' + json['TeamLimit'] + '</td></tr>';
+      str = str + '<tr><td>' + '<button class="btn btn-info" onclick="addToTeam()">申请加入该队伍</button>' + '</td></tr>';
+      teamdetail.empty();
+      teamdetail.append(str);
+   });
+}
+
+		//申请加入团队
+function addToTeam(){
+   var teamid = document.getElementById('teamid').innerHTML;
+   var studentid = getCookie('studentid');
+   var courseid = document.getElementById('courseid').innerHTML;
+   var url = '/CoPlat/team_application_response/';
+   $.post(url, {TeamId: teamid, StudentId: studentid, CourseId: courseid}).success(function(data){
+      var json = eval('(' + data + ')');
+      if(json['Status'] == 'Success'){
+         alert('申请发送成功！');
+      }
+      else if(json['Status'] == 'Fail'){
+         alert('申请发送失败！');
+      }
+   });
+}
+
+		//获取该学生已经加入的团队列表
+		function displayMyTeam(){
+			document.getElementById('applyresultcontainer').style.display = 'none';
+			document.getElementById('coursecontainer').style.display = 'none';
+			document.getElementById('createteamcontainer').style.display = 'none';
+			document.getElementById('applycontainer').style.display = 'none';
+			document.getElementById('myteamcontainer').style.display = 'block';
+			document.getElementById('myteamdetail').innerHTML = '';
+			$('#myteamdetail').empty();
+			var mtl = $('#myteamlist');
+			var studentid = getCookie('studentid');
+			var url = '/CoPlat/student_teamlist_response/';
+			$.post(url, {StudentId: studentid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var length = json.Teams.length;
+				var str = '';
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td>' + '<button class="btn btn-link btn-xs" onclick="displayMyTeamDetail(\'' + json.Teams[i].TeamId + '\')">' + json.Teams[i].TeamName + '</button>' + '</td></tr>'
+				}
+				mtl.empty();
+				mtl.append(str);
+			});
+		}
+
+		//获取某学生加入的团队详情，此处需要判断该学生是否是该团队的队长
+		function displayMyTeamDetail(teamid){
+		document.getElementById('applycontainer').style.display = 'none';
+			document.getElementById('myteamid').innerHTML = teamid;
+			var studentid = getCookie('studentid');
+			var mtd = $('#myteamdetail');
+			var selectcaptain = $('#selectcaptain');
+			var selectstr = '';
+			var str = '';
+			var url = '/CoPlat/team_details_response/';
+			$.post(url, {TeamId: teamid, StudentId:studentid}).success(function(data){
+				var json = eval('(' + data + ')');
+				str = str + '<tr><td>' + '团队名称：' + json['TeamName'] + '</td></tr>';
+				str = str + '<tr><td>' + '团队简介：' + json['TeamName'] + '</td></tr>';
+				str = str + '<tr><td>' + '团队成员：' + '</td></tr>';
+				var length = json.Members.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<tr><td><div style="text-indent: 2rem">' + json.Members[i].StudentId + ' ' + json.Members[i].StudentName + '</div></td></tr>';
+          if (json.Members[i].StudentId == studentid)
+              continue;
+          else {
+              selectstr = selectstr + '<option value="' + json.Members[i].StudentId + '">' + json.Members[i].StudentId + ' ' + json.Members[i].StudentName + '</option>';}
+				}
+				if(json['isLeader'] == '1' &&  json['isComplete'] == 0){
+        document.getElementById('changecaptaincontainer').style.display = 'block';
+					str = str + '<tr><td>' + '<button class="btn btn-info" onclick="completeTeam()">完成团队组建</button>' + '</td></tr>';
+					str = str + '<tr><td>' + '<button class="btn btn-info" onclick="displayApplySelect()">查看申请名单</button>' + '</td></tr>';
+				}
+				mtd.empty();
+				mtd.append(str);
+				selectcaptain.empty();
+				selectcaptain.append(selectstr);
+			});
+		}
+
+		//更换队长
+		function changeCaptain(){
+			var teamid = document.getElementById('myteamid').innerHTML;
+			var si = document.getElementById('selectcaptain').selectedIndex;
+			var studentid = document.getElementById('selectcaptain').options[si].value;
+			if(studentid == getCookie('studentid')){
+				alert('不能选择自己！');
+				return;
+			}
+			var url = '/CoPlat/leader_switch_response/';
+			$.post(url, {TeamId: teamid, StudentId: studentid}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('操作成功！');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('操作失败！');
+				}
+			});
+		}
+
+
+		//完成团队组建
+		function completeTeam(){
+			var teamid = document.getElementById('myteamid').innerHTML;
+			var url = '/CoPlat/team_setready_response/';
+			$.post(url, {TeamId: teamid}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('已成功完成团队组建！');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('完成团队组建失败！');
+				}
+			});
+		}
+
+		//将所有申请人显示在一个下拉菜单中
+		function displayApplySelect(){
+			document.getElementById('applycontainer').style.display = 'block';
+			var teamid = document.getElementById('myteamid').innerHTML;
+			var applyselect = $('#applyselect');
+			var str = '';
+			var url = '/CoPlat/display_candidateslist_response/';
+			$.post(url, {TeamId: teamid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var length = json.Students.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<option value="' + json.Students[i].StudentId + '">' + json.Students[i].StudentId + ' ' + json.Students[i].StudentName + '</option>';
+				}
+				applyselect.empty();
+				applyselect.append(str);
+			});
+		}
+
+		//同意某学生加入团队
+		function admitJoin(){
+			var teamid = document.getElementById('myteamid').innerHTML;
+			var si = document.getElementById('applyselect').selectedIndex;
+			var studentid = document.getElementById('applyselect').options[si].value;
+			var decision = 'admitted';
+			var url = '/CoPlat/application_setstatus_response/';
+			$.post(url,{TeamId: teamid, StudentId: studentid, Decision: decision}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('已接受申请！');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('未成功接受该学生申请，请稍候再试！');
+				}
+			});
+		}
+
+		//拒绝某学生加入团队
+		function rejectJoin(){
+			var teamid = document.getElementById('myteamid').innerHTML;
+			var si = document.getElementById('applyselect').selectedIndex;
+			var studentid = document.getElementById('applyselect').options[si].value;
+			var decision = 'rejected';
+			var url = '/CoPlat/application_setstatus_response/';
+			$.post(url,{TeamId: teamid, StudentId: studentid, Decision: decision}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('已拒绝申请！');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('未成功拒绝该学生申请，请稍候再试！');
+				}
+			});
+		}
+
+		//此处需再获得一次所有团队课程列表，返回与window.onload中的一样即可
+		function displayCreateTeam(){
+			document.getElementById('applyresultcontainer').style.display = 'none';
+			document.getElementById('coursecontainer').style.display = 'none';
+			document.getElementById('myteamcontainer').style.display = 'none';
+			document.getElementById('createteamcontainer').style.display = 'block';
+			var cs = $('#courseselect');
+			var url = '/CoPlat/team_courselist_response/';
+			$.post(url).success(function(data){
+				var json = eval('(' + data + ')');
+				var str = '';
+				var length = json.courses.length;
+				for(var i = 0 ; i < length ; i++){
+					str = str + '<option value="' + json.courses[i].CourseId + '">' + json.courses[i].CourseName + '</option>';
+				}
+				cs.empty();
+				cs.append(str);
+			});
+		}
+
+		//创建团队
+		function createTeam(){
+			var tn = $('#teamname');
+			var teamname = tn.val();
+			var tl = $('#teamlimit');
+			var teamlimit= tl.val();
+			var td = $('#teamdescription');
+			var teamdescription = td.val();
+			if(teamname == '' || teamlimit == '' || teamdescription == ''){
+				alert('请输入完整的组建团队信息！');
+			}
+			var si = document.getElementById('courseselect').selectedIndex;
+			var courseid = document.getElementById('courseselect').options[si].value;
+			var studentid = getCookie('studentid');
+			var url = '/CoPlat/team_build_response/';
+			$.post(url, {CourseId: courseid, StudentId: studentid, Name: teamname, Description: teamdescription, Limit: teamlimit}).success(function(data){
+				var json = eval('(' + data + ')');
+				if(json['Status'] == 'Success'){
+					alert('新建团队成功！');
+				}
+				else if(json['Status'] == 'Fail'){
+					alert('新建团队失败！请检查相关信息填写是否正确。');
+				}
+			});
+			tn.val('');
+			tl.val('');
+			td.val('');
+		}
+
+		//显示申请结果列表
+		function displayApplyResult(){
+			document.getElementById('createteamcontainer').style.display = 'none';
+			document.getElementById('applyresultcontainer').style.display = 'block';
+			document.getElementById('coursecontainer').style.display = 'none';
+			document.getElementById('myteamcontainer').style.display = 'none';
+			var studentid = getCookie('studentid');
+			var arl = $('#applyresultlist');
+			var url = '/CoPlat/application_management_response/';
+			$.post(url, {StudentId: studentid}).success(function(data){
+				var json = eval('(' + data + ')');
+				var length = json.Teams.length;
+				var str = '';
+				for(var i = 0 ; i < length ; i++){
+					if(json.Teams[i].Status == 'waiting'){
+						str = str + '<li>' + json.Teams[i].TeamName + '：' + '加入团队请求未处理，请等待' + '</li>';
+					}
+					else if(json.Teams[i].Status == 'rejected'){
+						str = str + '<li>' + json.Teams[i].TeamName + '：' + '加入团队请求被拒绝' + '</li>';
+					}
+					else if(json.Teams[i].Status == 'admitted'){
+						str = str + '<li>' + json.Teams[i].TeamName + '：' + '加入团队请求被接受' + '</li>';
+					}
+					arl.empty();
+					arl.append(str);
+				}
+			});
+		}
+	</script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-7">
+			<div id="title">
+				在线协同教学系统
+			</div>
+		</div>
+		<div class="col-md-5">
+			<div id="userinfo">
+
+			</div>
+		</div>
+	</div>
+	<div id="nav">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/student_course_load/" target="_self">查看课程</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="selecteditem">
+					<a href="/CoPlat/student_team_load/" target="_self">团队管理</a>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="item">
+					<a href="/CoPlat/studentInformation_load/" target="_self">管理个人信息</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2">
+			<div id="maincontainerL">
+				<table class="table">
+					<thead><tr><td></td></tr></thead>
+					<tbody style="text-align: center">
+					<tr>
+						<td><button class="btn btn-info btn-xs" onclick="displayApplyResult()">我的组队请求</button></td>
+					</tr>
+					<tr>
+						<td><button class="btn btn-info btn-xs" onclick="displayMyTeam()">管理我的团队</button></td>
+					</tr>
+					<tr>
+						<td><button class="btn btn-info btn-xs" onclick="displayCreateTeam()">发布组队信息</button></td>
+					</tr>
+					</tbody>
+				</table>
+				<table class="table">
+					<thead>
+					<tr>
+						<td>
+							<div style="text-align: center;font-weight: bold"><div style="display:none;" id="courseid"></div>所有团队课程列表</div>
+						</td>
+					</tr>
+					</thead>
+					<tbody id="teamcourselist" style="text-align: center"></tbody>
+				</table>
+			</div>
+		</div>
+		<div class="col-md-10">
+			<div id="maincontainerR">
+				<div id="coursecontainer" style="display: none">
+					<div class="row">
+						<div class="col-md-3">
+							<table class="table">
+								<thead style="text-align: center"><tr><td>本课程的团队列表</td></tr></thead>
+								<tbody id="courseteamlist" style="text-align: center"></tbody>
+							</table>
+						</div>
+						<div class="col-md-4">
+							<div id="teamdetailcontainer" style="display: none">
+								<table class="table">
+									<thead style="text-align: center"><tr><td><label for="teamid">当前团队ID：</label><label id="teamid" style="font-weight: bold"></label></td></tr></thead>
+									<tbody id="teamdetail" style="text-align: center"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="myteamcontainer" style="display: none">
+					<div class="row">
+						<div class="col-md-3">
+							<table class="table">
+								<thead><tr><td></td></tr></thead>
+								<tbody id="myteamlist" style="text-align: center"></tbody>
+							</table>
+						</div>
+						<div class="col-md-4">
+							<table class="table">
+								<thead><tr><td><div style="display: none" id="myteamid"></div></td></tr></thead>
+								<tbody id="myteamdetail"></tbody>
+							</table>
+							<div id="changecaptaincontainer" style="display: none">
+								<div class="form-group">
+									<label for="selectcaptain">选择一位成员成为团队负责人：</label>
+									<select id="selectcaptain" class="form-control"></select>
+								</div>
+								<div class="form">
+									<button class="btn btn-default" onclick="changeCaptain()">更改团队负责人</button>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-5">
+							<div id="applycontainer" style="display: none">
+								<div class="form-group">
+									<label for="applyselect">申请人名单：</label>
+									<select id="applyselect" class="form-control"></select>
+								</div>
+								<div class="form-group">
+									<button class="btn btn-success" onclick="admitJoin()">同意申请</button>
+								</div>
+								<div class="form-group">
+									<button class="btn btn-danger" onclick="rejectJoin()">拒绝申请</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="createteamcontainer" style="display: none">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="courseselect">选择该团队准备加入的课程</label>
+								<select id="courseselect" class="form-control"></select>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">团队名称</div>
+									<input class="form-control" id="teamname" placeholder="输入团队名称">
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="input-group">
+									<div class="input-group-addon">人数限制</div>
+									<input class="form-control" id="teamlimit" placeholder="输入人数限制">
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="teamdescription">团队描述</label>
+								<textarea id="teamdescription" rows="3"></textarea>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-default" onclick="createTeam()">创建队伍</button>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div id="applyresultcontainer" style="display: none">
+					<ul id="applyresultlist"></ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
