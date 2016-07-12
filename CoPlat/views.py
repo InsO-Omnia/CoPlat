@@ -262,7 +262,7 @@ def get_studentCourse_information(request):
             for i in Instruction.objects.all():
                 if (i.course.No == id):
                     teacherId = i.teacher.Id
-                    teacherName = i.teacher.user.first_name+i.teacher.user.last_name
+                    teacherName = i.teacher.user.first_name+' '+i.teacher.user.last_name
                     information.append({"TeacherId": teacherId, "TeacherName": teacherName})
     response = json.dumps(information)
     response = "{ \"CourseName\": "+ "\"" + courseName+"\""+","+"\"Teacher\":"+ response +","+"\"Credit\":"+ "\""+credit+ "\""+","+"\"Weeks\":"+ "\""+weeks+ "\""+"}"
@@ -496,7 +496,7 @@ def teacher_coursedetails_response(request):
     for element in teacher_list:
         rela_teacher_id = str(element)
         rela_teacher = Teacher.objects.get(Id = rela_teacher_id)
-        teacher_info = teacher_info + "{\"TeacherId\" : \"" + rela_teacher_id + "\", \"TeacherName\":\"" + rela_teacher.user.first_name + rela_teacher.user.last_name + "\"},"
+        teacher_info = teacher_info + "{\"TeacherId\" : \"" + rela_teacher_id + "\", \"TeacherName\":\"" + rela_teacher.user.first_name + ' ' +rela_teacher.user.last_name + "\"},"
     teacher_info = teacher_info[0:-1] + "],"
     response = response + teacher_info + "\"Credit\":\"" + str(rela_course.Credit) + "\"," + "\"Weeks\":\"" + str(rela_course.Duration) + "\"}"
     response = json.dumps(response)
@@ -513,22 +513,33 @@ def coursework_studentlist_response(request):
     if courseWork.Is_Teamwork == False:
         assignment = Assignment.objects.filter(coursework=courseWork)
         studentlist =[]
-        for i in assignment:
-            d = {}
-            d['StudentId'] = i.student.Id
-            d['StudentName'] = i.student.user.last_name+i.student.user.first_name
-            studentlist.append(d)
-            coursedetail['Students'] = studentlist
+        if len(assignment):
+            for i in assignment:
+                d = {}
+                d['StudentId'] = i.student.Id
+                d['StudentName'] = i.student.user.first_name+' '+i.student.user.last_name
+                studentlist.append(d)
+                coursedetail['Students'] = studentlist
+                response = str(coursedetail)
+        else:
+            response = str(coursedetail)
+            response = response[0:-1] + ",\'Students\':[]}" 
+
     else:
         assignment = Team_Assignment.objects.filter(coursework=courseWork)
         studentlist =[]
-        for i in assignment:
-            d = {}
-            d['StudentId'] = i.team.No
-            d['StudentName'] = i.team.Name
-            studentlist.append(d)
-            coursedetail['Students'] = studentlist
-    response = json.dumps(coursedetail)
+        if len(assignment):
+            for i in assignment:
+                d = {}
+                d['StudentId'] = i.team.No
+                d['StudentName'] = i.team.Name
+                studentlist.append(d)
+                coursedetail['Students'] = studentlist
+                response = str(coursedetail)
+        else:
+            response = str(coursedetail)
+            response = response[0:-1] + ",\'Students\':[]}" 
+    response = json.dumps(response)
     return HttpResponse(response, content_type="application/json")
 
 @csrf_exempt
@@ -542,7 +553,7 @@ def particular_courseworkpath_response(request):
         else:
             path = '/CoPlat/media/Coursework/' + rela_assign.Title
         content = rela_assign.Content
-        response = "{Path:\'" + path + "\',TextHomework:\'" + content + "\'}"
+        response = {'Path':path ,'TextHomework':content}
     else:
         rela_team = Team.objects.get(No = request.POST.get('StudentId',''))
         rela_assign = Team_Assignment.objects.get(No = rela_team.No + '_' + rela_coursework.No)
@@ -551,9 +562,8 @@ def particular_courseworkpath_response(request):
         else:
             path = '/CoPlat/media/Coursework/' + rela_assign.Title
         content = rela_assign.Content
-        response = "{Path:\'" + path + "\',TextHomework:\'" + content + "\'}"
-    response = json.dumps(response)
-    print(response)
+        response = {'Path':path ,'TextHomework':content}
+    response = json.dumps(str(response))
     return HttpResponse(response, content_type="application/json")
 
 @csrf_exempt
@@ -562,7 +572,7 @@ def add_coursework_response(request):
     coursework_title = request.POST.get('Title','')
     description = request.POST.get('Description','')
     coursework_type = request.POST.get('HomeworkType','')
-    if coursework_type == 'Person':
+    if coursework_type == 'person':
         teamwork = False
     else:
         teamwork = True
@@ -672,7 +682,7 @@ def course_studentlist_response(request):
     for e in Enrollment.objects.all():
         if(e.course.No==id):
             studentid = e.student.Id
-            studentname = e.student.user.first_name+e.student.user.last_name
+            studentname = e.student.user.first_name+ ' ' +e.student.user.last_name
             list.append({"StudentId":studentid,"StudentName":studentname})
 
     response = json.dumps(list)
@@ -685,7 +695,7 @@ def course_studentlist_response(request):
 def get_studentName_response(request):
     id = request.POST.get('StudentId','')
     s = Student.objects.get(Id =id)
-    name = s.user.first_name+s.user.last_name
+    name = s.user.first_name + ' ' + s.user.last_name
     response = "{"+"\""+"StudentName"+"\""+":"+"\""+name+"\""+"}"
     return HttpResponse(response, content_type="application/json")
 
@@ -705,7 +715,7 @@ def update_studentPassword(request):
 def get_teacherName_response(request):
     id = request.POST.get('TeacherId','')
     t = Teacher.objects.get(Id =id)
-    name = t.user.first_name+t.user.last_name
+    name = t.user.first_name+ ' ' + t.user.last_name
     response = "{"+"\""+"TeacherName"+"\""+":"+"\""+name+"\""+"}"
     return HttpResponse(response, content_type="application/json")
 @csrf_exempt
@@ -771,10 +781,10 @@ def create_new_course(request):
     try:
         sem = Semester.objects.get(No='1')
         newCourse = Course(No=str(Course.objects.count()+1),Title=title,Credit=credit,Start_Date= startdate,End_Date=enddate,Duration=weeks,semester=sem)
-        if ctype == 'Person':
-            newCourse.Team_Admittance == False
+        if ctype == 'person':
+            newCourse.Team_Admittance = False
         else:
-            newCourse.Team_Admittance == True
+            newCourse.Team_Admittance = True
         newCourse.save()
     except:
         response = {'Status' : 'Fail'}
@@ -796,7 +806,7 @@ def get_course_details(request):
             list = Instruction.objects.all()
             for i in list:
                 if i.course.No == courseid:
-                    teacherlist.append({"TeacherId": i.teacher.Id, "TeacherName":i.teacher.user.last_name+i.teacher.user.first_name})
+                    teacherlist.append({"TeacherId": i.teacher.Id, "TeacherName":i.teacher.user.first_name+' '+i.teacher.user.last_name})
             course_details["Teacher"] = teacherlist
             course_details["Credit"] = str(c.Credit)
             course_details["Weeks"] = str(c.Duration)
@@ -973,7 +983,7 @@ def team_application_response(request):
         except ObjectDoesNotExist:
             pass
         else:
-            response = json.dumps("{Status : 'You\'re already a member of another team in this course!'}")
+            response = json.dumps("{Status : 'You are already a member of another team in this course!'}")
             return HttpResponse(response, content_type="application/json")
     try:
         new_application = Team_Application.objects.get(No = 'app_' + rela_team.No + '_' + rela_student.Id)
@@ -1195,8 +1205,10 @@ def show_message(request):
     response = "{"+"\""+"Name"+"\":"+"\""+cname+"\""+","+"\""+"Messages"+"\":[ "
     for element in message_list:
         text=element.content
-        sname=element.sender.first_name+element.sender.last_name
-        t1 = str(element.time)[0:-6]
+        sname=element.sender.first_name+' ' +element.sender.last_name
+        print(element.time)
+        t1 = str(element.time)
+        t1 = t1[0:18]
         starttime = datetime.strptime(t1, '%Y-%m-%d %H:%M:%S')
         starttime = starttime + timedelta(hours=8)
         t = str(starttime)

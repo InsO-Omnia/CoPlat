@@ -75,11 +75,8 @@ function addToTeam(){
    var url = '/CoPlat/team_application_response/';
    $.post(url, {TeamId: teamid, StudentId: studentid, CourseId: courseid}).success(function(data){
       var json = eval('(' + data + ')');
-      if(json['Status'] == 'Success'){
-         alert('申请发送成功！');
-      }
-      else if(json['Status'] == 'Fail'){
-         alert('申请发送失败！');
+      if(json['Status'] != ''){
+         alert(json['Status']);
       }
    });
 }
@@ -110,7 +107,8 @@ function addToTeam(){
 
 		//获取某学生加入的团队详情，此处需要判断该学生是否是该团队的队长
 		function displayMyTeamDetail(teamid){
-		document.getElementById('applycontainer').style.display = 'none';
+		                        document.getElementById('applycontainer').style.display = 'none';
+                             document.getElementById('changecaptaincontainer').style.display = 'none';
 			document.getElementById('myteamid').innerHTML = teamid;
 			var studentid = getCookie('studentid');
 			var mtd = $('#myteamdetail');

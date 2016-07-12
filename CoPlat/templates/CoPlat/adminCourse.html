@@ -68,8 +68,7 @@
 			}
 			if(!checkDate(csdate, cedate, cweeks)){
 				alert('相关信息填写有误(起始日期与周数矛盾)，请检查！');
-				return;
-			}
+				return; }
 			var url = '/CoPlat/create_new_course/';
 			$.post(url, {Name: cname, Credit: ccredit,Type: ctype,  Weeks: cweeks, StartDate : csdate, EndDate: cedate}).success(function(data){
 				var json = data;

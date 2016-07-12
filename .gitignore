@@ -2,5 +2,4 @@
 .directory
 db.sqlite3
 text.txt
-CoPlat/migrations/*
 *.pyc

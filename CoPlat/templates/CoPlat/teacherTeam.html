@@ -92,7 +92,7 @@
 			$.post(url, {TeamId : teamid}).success(function(data){
 				var json = eval('(' + data + ')');
 				str = str + '<tr><td>' + '团队名称：' + json['TeamName'] + '</td></tr>';
-				str = str + '<tr><td>' + '团队简介：' + json['TeamName'] + '</td></tr>';
+				str = str + '<tr><td>' + '团队简介：' + json['TeamDes'] + '</td></tr>';
 				str = str + '<tr><td>' + '团队成员：' + '</td></tr>';
 				var length = json.Members.length;
 				for(var i = 0 ; i < length ; i++){

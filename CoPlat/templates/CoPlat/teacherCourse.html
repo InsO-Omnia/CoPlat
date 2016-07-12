@@ -136,7 +136,7 @@
 			var htindex = document.getElementById('homeworktype').selectedIndex;
 			var homeworktype = document.getElementById('homeworktype').options[htindex].value;
 			var url = '/CoPlat/add_coursework_response/';
-			$.post(url, {CourseId: courseid,  Title: title,Description: description, HomeworkType: homeworktype, StartTime: starttime, EndTime: endtime}).success(function(data){ alert(data);
+			$.post(url, {CourseId: courseid,  Title: title,Description: description, HomeworkType: homeworktype, StartTime: starttime, EndTime: endtime}).success(function(data){ 
 				var json = eval('(' + data + ')');
 				if(json['Status'] == 'Success'){
 					alert('作业添加成功！');
@@ -155,7 +155,7 @@
 			var hsl = $('#homeworkstudentlist');
 			var url = '/CoPlat/coursework_studentlist_response/';
 			$.post(url, {HomeworkId:homeworkid}).success(function(data){
-				var json = data;
+				var json = eval('(' + data + ')');
 				document.getElementById('hddescription').innerHTML = '作业描述：' + json['Description'];
 				document.getElementById('hdstarttime').innerHTML = '开始时间：' + json['StartTime'];
 				document.getElementById('hdendtime').innerHTML = '结束时间：' + json['EndTime'];
@@ -179,9 +179,9 @@
 			var homeworkid = document.getElementById('homeworkid').innerHTML;
 			var url = '/CoPlat/particular_courseworkpath_response/';
 			var path = '';
-			$.post(url, {StudentId: studentid, HomeworkId: homeworkid}).success(function(data){
-				var json = eval('(' + data + ')');
-				path = json['Path'];
+			$.post(url, {StudentId: studentid, HomeworkId: homeworkid}).success(function(data){ 
+        var json = eval('(' + data + ')');
+				path = json['Path'];            
 				if(path != ''){
 					$('#download').attr('href', path);
 					document.getElementById('downloadguide').style.display = 'block';
